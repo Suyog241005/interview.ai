@@ -3,8 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch index.ts",
-    "build": "bun build index.ts --outdir dist --target node",
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target node",
     "start": "bun run dist/index.js"
   },
   "private": true,
@@ -27,6 +27,7 @@
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.3",
-    "morgan": "^1.11.0"
+    "morgan": "^1.11.0",
+    "zod": "^4.4.3"
   }
 }
