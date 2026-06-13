@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useAtom } from "jotai";
 import { userAtom } from "./jotai/atoms";
+import InterviewPage from "./pages/Interview";
 
 function App() {
   const [user, setUser] = useAtom(userAtom);
@@ -19,7 +20,6 @@ function App() {
     };
     getUser();
   }, []);
-  console.log("App", user);
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -27,6 +27,7 @@ function App() {
         path="/auth"
         element={user ? <Navigate to={"/"} replace /> : <AuthPage />}
       />
+      <Route path="/interview" element={<InterviewPage />} />
     </Routes>
   );
 }

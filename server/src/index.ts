@@ -8,6 +8,10 @@ import { authRouter } from "./modules/auth/auth.route";
 import mongoose from "mongoose";
 import { userRouter } from "./modules/user/user.route";
 import { authMiddleware } from "./middleware/auth.middleware";
+import { askAi } from "./services/ai.service";
+import { interviewRouter } from "./modules/interview/interview.route";
+import { upload } from "./middleware/multer.middleware";
+import { resumeAnalysisRouter } from "./modules/resume-analysis/resume-analysis.route";
 
 const app = express();
 
@@ -23,6 +27,8 @@ app.get("/api", (_req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", authMiddleware, userRouter);
+app.use("/api/resume", authMiddleware, resumeAnalysisRouter);
+app.use("/api/interview", authMiddleware, interviewRouter);
 
 // Error handling
 
