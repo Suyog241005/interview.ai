@@ -1,7 +1,11 @@
 import { generateText, Output } from "ai";
 import { google } from "@ai-sdk/google";
-import { InterviewQuestionsSchema, ResumeAnalysisSchema, type InterviewQuestions, type ResumeAnalysis } from "@interview.ai/types";
-
+import {
+  InterviewQuestionsSchema,
+  ResumeAnalysisSchema,
+  type InterviewQuestions,
+  type ResumeAnalysis,
+} from "@interview.ai/types";
 
 // // Service function to analyze PDF resume and return structured data
 export const analyzeResume = async (
@@ -45,17 +49,17 @@ export const generateInterviewQuestions = async ({
   resumeAnalysis,
   jobTitle,
   experience,
-  interviewType,
+  interviewMode,
 }: {
   resumeAnalysis: ResumeAnalysis;
   jobTitle: string;
   experience: string;
-  interviewType: "Technical" | "HR";
+  interviewMode: "Technical" | "HR";
 }): Promise<InterviewQuestions> => {
   try {
     // Construct prompt with all relevant details
     const prompt = `
-    You are an expert interviewer. Generate ${interviewType} interview questions based on the following information:
+    You are an expert interviewer. Generate ${interviewMode} interview questions based on the following information:
 
     --- Resume Analysis ---
     Name: ${resumeAnalysis.name}
@@ -73,11 +77,11 @@ export const generateInterviewQuestions = async ({
     --- Interview Details ---
     Target Job Role: ${jobTitle}
     Experience: ${experience}
-    Interview Type: ${interviewType}
+    Interview Mode: ${interviewMode}
 
-    Generate ${interviewType === "Technical" ? "10-15" : "8-12"} ${interviewType.toLowerCase()} questions that would be asked in a real interview for this profile.
+    Generate ${interviewMode === "Technical" ? "10-12" : "8-10"} ${interviewMode.toLowerCase()} questions that would be asked in a real interview for this profile.
     Include a mix of: 
-    - ${interviewType === "Technical" ? "introduce yourself, describe projects, technical fundamentals, problem-solving, system design (if experienced), project-specific questions, and relevant technologies" : "introduce yourself, behavioral questions, communication skills, career goals, adaptability, and cultural fit"}
+    - ${interviewMode === "Technical" ? "introduce yourself, explain the projects you have worked on in detail, technical fundamentals, problem-solving, system design (if experienced), project-specific questions, and relevant technologies" : "introduce yourself, behavioral questions, communication skills, career goals, adaptability, and cultural fit"}
     
     Return the output strictly in JSON format matching the following schema:
     {
@@ -86,7 +90,7 @@ export const generateInterviewQuestions = async ({
           "question": "The interview question text",
           "type": "Technical" | "HR",
           "category": "(optional) Category like Data Structures, SQL, Behavioral",
-          "difficulty": "(optional) Easy | Medium | Hard"
+          "difficulty": "Easy | Medium | Hard"
         }
       ]
     }

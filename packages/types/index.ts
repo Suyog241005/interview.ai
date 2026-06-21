@@ -55,10 +55,9 @@ export const InterviewQuestionsSchema = z.object({
           .optional()
           .describe("Category of the question (e.g. Data Structures, SQL)"),
         difficulty: z
-          .enum(["Easy", "Medium", "Hard"], {
+          .enum(["EASY", "MEDIUM", "HARD"], {
             error: "Difficulty must be Easy, Medium, or Hard",
           })
-          .optional()
           .describe("Difficulty level of the question"),
       }),
     )

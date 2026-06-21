@@ -8,11 +8,61 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String   
-  email     String   @unique
-  photoUrl  String?
-  credits   Int      @default(100)
+  id         String      @id @default(cuid())
+  name       String
+  email      String      @unique
+  photoUrl   String?
+  credits    Int         @default(100)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  interviews Interview[]
+}
+
+enum InterviewMode {
+  TECHNICAL
+  HR
+}
+
+enum InterviewStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Interview {
+  id            String          @id @default(cuid())
+  interviewMode InterviewMode
+  status        InterviewStatus @default(PENDING)
+  score         Float?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model Question {
+  id            String  @id @default(cuid())
+  questionText  String
+  userAnswer    String?
+  aiFeedback    String?
+  questionScore Float?
+
+  category   String?
+  difficulty Difficulty
+
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

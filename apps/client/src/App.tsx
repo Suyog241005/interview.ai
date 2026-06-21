@@ -22,12 +22,18 @@ function App() {
   }, []);
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route
+        path="/"
+        element={user ? <HomePage /> : <Navigate to={"/auth"} replace />}
+      />
       <Route
         path="/auth"
         element={user ? <Navigate to={"/"} replace /> : <AuthPage />}
       />
-      <Route path="/interview" element={<InterviewPage />} />
+      <Route
+        path="/interview"
+        element={user ? <InterviewPage /> : <Navigate to={"/auth"} replace />}
+      />
     </Routes>
   );
 }

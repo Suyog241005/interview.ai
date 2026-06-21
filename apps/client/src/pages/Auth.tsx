@@ -9,7 +9,7 @@ import { userAtom } from "@/jotai/atoms";
 import { useAtom } from "jotai";
 
 export default function AuthPage() {
-  const [user, setUser] = useAtom(userAtom);
+  const [_user, setUser] = useAtom(userAtom);
   const handleGoogleAuth = async () => {
     try {
       const data = await signInWithPopup(auth, googleProvider);
@@ -25,10 +25,7 @@ export default function AuthPage() {
       if (response.status === 200) {
         const userData = response.data.user;
         setUser(userData);
-        console.log("user", user);
-        // console.log(response.data);
       }
-      console.log(response);
     } catch (error) {
       console.log(error);
     }

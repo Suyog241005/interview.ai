@@ -29,7 +29,7 @@ import { useState } from "react";
 const formSchema = z.object({
   jobTitle: z.string().min(3, "Job title must be at least 3 characters"),
   experience: z.string(),
-  mode: z.enum(["Technical", "HR"], {
+  interviewMode: z.enum(["TECHNICAL", "HR"], {
     error: "Mode must be Technical or HR",
   }),
   resume: z
@@ -61,21 +61,33 @@ export const Step1Setup = ({
     defaultValues: {
       jobTitle: "",
       experience: "",
-      mode: "Technical",
+      interviewMode: "TECHNICAL",
       resume: undefined,
     },
   });
 
   const onSubmit = async (values: FormType) => {
     try {
-      console.log(values, resumeAnalysis);
-      const questions = await axios.post(
-        `${import.meta.env.VITE_API_URL}/interview/questions`,
-        { values, resumeAnalysis },
-        { withCredentials: true },
-      );
+      const interview = (
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/interview/start`,
+          { interviewMode: values.interviewMode },
+          { withCredentials: true },
+        )
+      ).data;
+      const questions = (
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/interview/questions`,
+          { values, resumeAnalysis, interviewId: interview.id },
+          { withCredentials: true },
+        )
+      ).data;
 
-      console.log(questions.data);
+      if (questions.status === 200) {
+        console.log(questions);
+      } else {
+        console.log("Failed to start interview");
+      }
     } catch (error) {
       console.log(error);
     }
@@ -201,7 +213,7 @@ export const Step1Setup = ({
                   )}
                 />
                 <Controller
-                  name="mode"
+                  name="interviewMode"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
@@ -220,7 +232,7 @@ export const Step1Setup = ({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectGroup>
-                              <SelectItem value="Technical">
+                              <SelectItem value="TECHNICAL">
                                 Technical
                               </SelectItem>
                               <SelectItem value="HR">HR</SelectItem>
