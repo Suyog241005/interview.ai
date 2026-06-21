@@ -8,4 +8,3 @@ export const AuthSchema = z.object({
   email: z.email("Invalid email address"),
   photoUrl: z.string().optional(),
 });
-

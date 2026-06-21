@@ -23,7 +23,7 @@ import {
 } from "../ui/select";
 import { Button } from "../ui/button";
 import axios from "axios";
-import type { ResumeAnalysis } from "@/types";
+import type { ResumeAnalysis } from "@interview.ai/types";
 import { useState } from "react";
 
 const formSchema = z.object({

@@ -1,13 +1,6 @@
 import z from "zod";
 
-export type userType = {
-  _id: string;
-  name: string;
-  email: string;
-  photoUrl?: string;
-  credits: number;
-};
-
+// Zod Schema for structured resume analysis
 export const ResumeAnalysisSchema = z.object({
   name: z.string().describe("Candidate's full name"),
   email: z.string().optional().describe("Candidate's email address"),
@@ -47,3 +40,28 @@ export const ResumeAnalysisSchema = z.object({
     .describe("A brief 2-3 sentence professional summary of the candidate"),
 });
 export type ResumeAnalysis = z.infer<typeof ResumeAnalysisSchema>;
+
+// Zod Schema for structured interview questions
+export const InterviewQuestionsSchema = z.object({
+  questions: z
+    .array(
+      z.object({
+        question: z.string().describe("Interview question"),
+        type: z.enum(["Technical", "HR"], {
+          error: "Type must be Technical or HR",
+        }),
+        category: z
+          .string()
+          .optional()
+          .describe("Category of the question (e.g. Data Structures, SQL)"),
+        difficulty: z
+          .enum(["Easy", "Medium", "Hard"], {
+            error: "Difficulty must be Easy, Medium, or Hard",
+          })
+          .optional()
+          .describe("Difficulty level of the question"),
+      }),
+    )
+    .describe("List of interview questions"),
+});
+export type InterviewQuestions = z.infer<typeof InterviewQuestionsSchema>;
