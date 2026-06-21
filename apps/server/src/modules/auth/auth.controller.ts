@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { AuthSchema } from "../../zod";
-import { User } from "../user/user.model";
 import { genToken } from "../../utils/token";
+import { prisma } from "@interview.ai/db";
 
 export const authController = async (req: Request, res: Response) => {
   try {
@@ -14,10 +14,14 @@ export const authController = async (req: Request, res: Response) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
 
     if (existingUser) {
-      const token = genToken(existingUser._id.toString());
+      const token = genToken(existingUser.id.toString());
       res.cookie("token", token, {
         httpOnly: true,
         secure: true,
@@ -30,13 +34,15 @@ export const authController = async (req: Request, res: Response) => {
         token,
       });
     } else {
-      const newUser = await User.create({
-        name,
-        email,
-        photoUrl,
+      const newUser = await prisma.user.create({
+        data: {
+          name,
+          email,
+          photoUrl,
+        },
       });
 
-      const token = genToken(newUser._id.toString());
+      const token = genToken(newUser.id.toString());
       res.cookie("token", token, {
         httpOnly: true,
         secure: true,

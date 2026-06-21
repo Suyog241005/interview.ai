@@ -1,11 +1,15 @@
+import { prisma } from "@interview.ai/db";
 import type { Request, Response } from "express";
-import { User } from "./user.model";
 
 export const getCurrentUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
 
-    const user = await User.findById(userId);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
 
     if (!user) {
       return res.status(404).json({
