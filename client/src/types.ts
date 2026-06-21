@@ -9,6 +9,8 @@ export type userType = {
 };
 
 export const ResumeAnalysisSchema = z.object({
+  name: z.string().describe("Candidate's full name"),
+  email: z.string().optional().describe("Candidate's email address"),
   skills: z
     .array(z.string())
     .describe("List of core technical and soft skills"),
@@ -25,9 +27,7 @@ export const ResumeAnalysisSchema = z.object({
     )
     .optional()
     .describe("Projects worked on"),
-  experienceYears: z
-    .number()
-    .describe("Estimated total years of professional experience"),
+  experience: z.string().describe("Experience of candidate"),
   education: z
     .array(
       z.object({
@@ -46,5 +46,4 @@ export const ResumeAnalysisSchema = z.object({
     .string()
     .describe("A brief 2-3 sentence professional summary of the candidate"),
 });
-
-export type ResumeAnalysisType = z.infer<typeof ResumeAnalysisSchema>
+export type ResumeAnalysis = z.infer<typeof ResumeAnalysisSchema>;

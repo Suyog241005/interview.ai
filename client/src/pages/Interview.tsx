@@ -5,13 +5,7 @@ import { useState } from "react";
 
 export default function InterviewPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [interviewData, setInterviewData] = useState<null | {
-    jobTitle: string;
-    jobDescription: string;
-    resumeUrl: string;
-    experience: number;
-    focusArea: string;
-  }>(null);
+  const [interviewData, setInterviewData] = useState<null | any>(null);
 
   return (
     <div className="min-h-screen bg-[#f3f3f3] flex flex-col">

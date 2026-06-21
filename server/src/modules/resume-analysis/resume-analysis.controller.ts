@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import fs from "fs";
 import { analyzeResume } from "../../services/ai.service";
-import { ResumeAnalysis } from "./resume-analysis.model";
 
 export const analyzeResumeController = async (req: Request, res: Response) => {
   try {
@@ -13,14 +12,9 @@ export const analyzeResumeController = async (req: Request, res: Response) => {
 
     const resumeAnalysis = await analyzeResume(fileBuffer);
 
-    const resume = await ResumeAnalysis.create({
-      userId: req.userId,
-      resumeAnalysis: resumeAnalysis,
-    });
-
     fs.unlinkSync(filepath);
 
-    return res.json(resume);
+    return res.json(resumeAnalysis);
   } catch (error) {
     console.error(error);
 

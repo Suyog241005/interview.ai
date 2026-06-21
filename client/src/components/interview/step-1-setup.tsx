@@ -23,15 +23,12 @@ import {
 } from "../ui/select";
 import { Button } from "../ui/button";
 import axios from "axios";
-import type { ResumeAnalysisType } from "@/types";
+import type { ResumeAnalysis } from "@/types";
 import { useState } from "react";
 
 const formSchema = z.object({
   jobTitle: z.string().min(3, "Job title must be at least 3 characters"),
-  experience: z.coerce
-    .number<number>()
-    .min(0, "Experience must be at least 0")
-    .max(50, "Experience must be at most 50"),
+  experience: z.string(),
   mode: z.enum(["Technical", "HR"], {
     error: "Mode must be Technical or HR",
   }),
@@ -45,9 +42,10 @@ const formSchema = z.object({
     .refine(
       (file) => file?.type === "application/pdf",
       "Only PDF documents are supported.",
-    ).optional(),
+    )
+    .optional(),
 });
-type FormType = z.infer<typeof formSchema>;
+export type FormType = z.infer<typeof formSchema>;
 
 export const Step1Setup = ({
   onStart,
@@ -55,19 +53,29 @@ export const Step1Setup = ({
   onStart: (data: FormType) => void;
 }) => {
   const [resumeFileField, setResumeFileField] = useState<File | null>(null);
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(
+    null,
+  );
   const form = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       jobTitle: "",
-      experience: 0,
+      experience: "",
       mode: "Technical",
       resume: undefined,
     },
   });
 
-  const onSubmit = async (data: FormType) => {
+  const onSubmit = async (values: FormType) => {
     try {
-      console.log(data);
+      console.log(values, resumeAnalysis);
+      const questions = await axios.post(
+        `${import.meta.env.VITE_API_URL}/interview/questions`,
+        { values, resumeAnalysis },
+        { withCredentials: true },
+      );
+
+      console.log(questions.data);
     } catch (error) {
       console.log(error);
     }
@@ -179,13 +187,11 @@ export const Step1Setup = ({
                         <Input
                           {...field}
                           id="setup-form-experience"
-                          type="number"
+                          type="text"
                           aria-invalid={fieldState.invalid}
                           placeholder="Experience"
                           autoComplete="off"
-                          onChange={(e) => field.onChange(+e.target.value)}
-                          min={0}
-                          max={50}
+                          onChange={(e) => field.onChange(e.target.value)}
                         />
                       </div>
                       {fieldState.invalid && (
@@ -295,17 +301,17 @@ export const Step1Setup = ({
                                   withCredentials: true,
                                 },
                               );
-                              console.log(response.data);
-                              const data: ResumeAnalysisType =
-                                response.data?.resumeAnalysis;
+                              const data: ResumeAnalysis = response.data;
+                              console.log(data);
                               const jobTitle = data.suggestedRoles[0];
-                              const experience = data.experienceYears;
+                              const experience = data.experience;
                               form.setValue("jobTitle", jobTitle, {
                                 shouldDirty: true,
                               });
                               form.setValue("experience", experience, {
                                 shouldDirty: true,
                               });
+                              setResumeAnalysis(data);
                             }}
                           />
                         </div>
