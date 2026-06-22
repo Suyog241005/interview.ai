@@ -4,6 +4,7 @@ import {
   generateInterviewQuestions,
 } from "../../services/ai.service";
 import { prisma } from "@interview.ai/db";
+import type { InterviewSession } from "@interview.ai/types";
 
 export const interviewQuestions = async (req: Request, res: Response) => {
   try {
@@ -36,9 +37,17 @@ export const interviewQuestions = async (req: Request, res: Response) => {
       where: {
         interviewId,
       },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
 
-    return res.json(interviewQuestions);
+    const interviewSession: InterviewSession = {
+      id: interviewId,
+      questions: interviewQuestions,
+    };
+
+    return res.json(interviewSession);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to generate interview questions" });
@@ -121,5 +130,37 @@ export const submitAnswer = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to submit the answer" });
+  }
+};
+
+export const getInterview = async (req: Request, res: Response) => {
+  try {
+    const { interviewId="cmqox71tl0000acsh68hvk1jx", userId="cmqnpkvia00006ush3cdnie56" } = req.params;
+
+    if (!interviewId || typeof interviewId !== "string") {
+      return res.status(400).json({ message: "Interview ID is required" });
+    }
+
+    if (!userId || typeof userId !== "string") {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const interview = await prisma.interview.findUniqueOrThrow({
+      where: {
+        id: "cmqox71tl0000acsh68hvk1jx",
+        userId,
+      },
+    });
+
+    if (!interview) {
+      return res.status(404).json({ message: "Interview not found" });
+    }
+
+    return res.json(interview);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to retrieve interview data. Please try again.",
+    });
   }
 };

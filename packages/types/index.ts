@@ -93,3 +93,92 @@ type Question = {
   updatedAt: Date;
 };
 export { type Question };
+
+export type InterviewSession = {
+  id: string;
+  questions: Question[];
+};
+
+export const DUMMY_INTERVIEW_SESSION: InterviewSession = {
+  id: "session_12345",
+  questions: [
+    {
+      id: "q_1",
+      interviewId: "session_12345",
+      questionText:
+        "Can you tell me about yourself and your background in software development?",
+      category: "Introduction",
+      difficulty: "EASY",
+      timeLimitSeconds: 60,
+      userAnswer: null,
+      confidenceScore: 0,
+      communicationScore: 0,
+      correctnessScore: 0,
+      questionScore: 0,
+      aiFeedback: null,
+      createdAt: new Date("2026-06-22T10:00:00Z"),
+      updatedAt: new Date("2026-06-22T10:01:00Z"),
+    },
+    {
+      id: "q_2",
+      interviewId: "session_12345",
+      questionText:
+        "What is the difference between virtual DOM and real DOM in React?",
+      category: "Core Skills",
+      difficulty: "EASY",
+      timeLimitSeconds: 60,
+      userAnswer: null,
+      confidenceScore: 0,
+      communicationScore: 0,
+      correctnessScore: 0,
+      questionScore: 0,
+      aiFeedback: null,
+      createdAt: new Date("2026-06-22T10:01:00Z"),
+      updatedAt: new Date("2026-06-22T10:02:00Z"),
+    },
+    {
+      id: "q_3",
+      interviewId: "session_12345",
+      questionText:
+        "Describe a complex technical challenge you faced on a project and how you resolved it.",
+      category: "Project Deep Dive",
+      difficulty: "MEDIUM",
+      timeLimitSeconds: 90,
+      userAnswer: null,
+      confidenceScore: 0,
+      communicationScore: 0,
+      correctnessScore: 0,
+      questionScore: 0,
+      aiFeedback: null,
+      createdAt: new Date("2026-06-22T10:02:00Z"),
+      updatedAt: new Date("2026-06-22T10:02:00Z"),
+    },
+  ],
+};
+
+// model Interview {
+//   id            String          @id @default(cuid())
+//   status        InterviewStatus @default(PENDING)
+//   score         Int             @default(0)
+//   role          String
+//   experience    String
+//   interviewMode InterviewMode
+
+//   userId String
+//   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+export type Interview = {
+  id: string;
+  status: "PENDING" | "IN_PROGRESS" | "COMPLETED";
+  score: number;
+  role: string;
+  experience: string;
+  interviewMode: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
