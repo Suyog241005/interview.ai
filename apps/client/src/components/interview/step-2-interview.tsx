@@ -1,15 +1,16 @@
+import { type Question } from "@interview.ai/types";
+import { useEffect } from "react";
+
 export const Step2Interview = ({
   interviewData,
   onComplete,
 }: {
-  interviewData: {
-    jobTitle: string;
-    jobDescription: string;
-    resumeUrl: string;
-    experience: number;
-    focusArea: string;
-  };
+  interviewData: Question[];
   onComplete: (report: any) => void;
 }) => {
-  return <div></div>;
+  useEffect(() => {
+    console.log(interviewData);
+  }, [interviewData]);
+
+  return <div>Step 2</div>;
 };

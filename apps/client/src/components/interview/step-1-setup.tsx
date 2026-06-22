@@ -23,7 +23,7 @@ import {
 } from "../ui/select";
 import { Button } from "../ui/button";
 import axios from "axios";
-import type { ResumeAnalysis } from "@interview.ai/types";
+import type { Question, ResumeAnalysis } from "@interview.ai/types";
 import { useState } from "react";
 
 const formSchema = z.object({
@@ -50,7 +50,7 @@ export type FormType = z.infer<typeof formSchema>;
 export const Step1Setup = ({
   onStart,
 }: {
-  onStart: (data: FormType) => void;
+  onStart: (data: Question[]) => void;
 }) => {
   const [resumeFileField, setResumeFileField] = useState<File | null>(null);
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(
@@ -71,7 +71,11 @@ export const Step1Setup = ({
       const interview = (
         await axios.post(
           `${import.meta.env.VITE_API_URL}/interview/start`,
-          { interviewMode: values.interviewMode },
+          {
+            interviewMode: values.interviewMode,
+            role: values.jobTitle,
+            experience: values.experience,
+          },
           { withCredentials: true },
         )
       ).data;
@@ -83,11 +87,7 @@ export const Step1Setup = ({
         )
       ).data;
 
-      if (questions.status === 200) {
-        console.log(questions);
-      } else {
-        console.log("Failed to start interview");
-      }
+      onStart(questions as Question[]);
     } catch (error) {
       console.log(error);
     }

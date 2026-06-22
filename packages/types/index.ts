@@ -64,3 +64,32 @@ export const InterviewQuestionsSchema = z.object({
     .describe("List of interview questions"),
 });
 export type InterviewQuestions = z.infer<typeof InterviewQuestionsSchema>;
+
+//Zod schema for evaluating the answers
+export const AnswerEvaluationSchema = z.object({
+  userAnswer: z.string().describe("User's answer to the question"),
+  confidenceScore: z.number().describe("Confidence Score of the answer"),
+  communicationScore: z.number().describe("Communication Score of the answer"),
+  correctnessScore: z.number().describe("Correctness Score of the answer"),
+  questionScore: z.number().describe("Question Score of the answer"),
+  aiFeedback: z.string().describe("AI Feedback of the answer"),
+});
+export type AnswerEvaluation = z.infer<typeof AnswerEvaluationSchema>;
+
+type Question = {
+  category: string | null;
+  difficulty: string;
+  userAnswer: string | null;
+  confidenceScore: number;
+  communicationScore: number;
+  correctnessScore: number;
+  questionScore: number;
+  aiFeedback: string | null;
+  id: string;
+  questionText: string;
+  timeLimitSeconds: number;
+  interviewId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+export { type Question };
