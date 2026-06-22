@@ -31,9 +31,11 @@ enum InterviewStatus {
 
 model Interview {
   id            String          @id @default(cuid())
-  interviewMode InterviewMode
   status        InterviewStatus @default(PENDING)
-  score         Float?
+  score         Int             @default(0)
+  role          String
+  experience    String
+  interviewMode InterviewMode
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -51,14 +53,17 @@ enum Difficulty {
 }
 
 model Question {
-  id            String  @id @default(cuid())
-  questionText  String
-  userAnswer    String?
-  aiFeedback    String?
-  questionScore Float?
-
-  category   String?
-  difficulty Difficulty
+  id                 String     @id @default(cuid())
+  questionText       String
+  difficulty         Difficulty
+  timeLimitSeconds   Int        @default(60)
+  userAnswer         String?
+  aiFeedback         String?
+  questionScore      Int        @default(0)
+  confidenceScore    Int        @default(0)
+  communicationScore Int        @default(0)
+  correctnessScore   Int        @default(0)
+  category           String?
 
   interviewId String
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)

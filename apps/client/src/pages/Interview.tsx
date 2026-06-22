@@ -1,11 +1,12 @@
 import { Step1Setup } from "@/components/interview/step-1-setup";
 import { Step2Interview } from "@/components/interview/step-2-interview";
 import { Step3Report } from "@/components/interview/step-3-report";
+import type { Question } from "@interview.ai/types";
 import { useState } from "react";
 
 export default function InterviewPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [interviewData, setInterviewData] = useState<null | any>(null);
+  const [interviewData, setInterviewData] = useState<null | Question[]>(null);
 
   return (
     <div className="min-h-screen bg-[#f3f3f3] flex flex-col">
