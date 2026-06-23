@@ -28,6 +28,7 @@ export const Step2Interview = ({
   onComplete: (report: any) => void;
 }) => {
   const [user] = useAtom(userAtom);
+  console.log(user);
   const { id, questions } = interviewData;
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [interviewStarted, setInterviewStarted] = useState(false);
@@ -35,11 +36,12 @@ export const Step2Interview = ({
 
   useEffect(() => {
     const response = async () => {
+      const interviewId = id;
+      const userId = user.id;
       const interview = (
         await axios.get(
-          `${import.meta.env.VITE_API_URL}/interview/get-interview`,
+          `${import.meta.env.VITE_API_URL}/interview/get-interview/${interviewId}/${userId}`,
           {
-            params: { interviewId: id, userId: user._id },
             withCredentials: true,
           },
         )
@@ -178,7 +180,9 @@ export const Step2Interview = ({
                       {interview?.role ? interview.role : "Full Stack"}
                     </p>
                     <span className="inline-block px-2 py-0.5 text-[10px] font-bold bg-slate-200 rounded text-slate-700 mt-1.5">
-                      {interview?.interviewMode ? interview.interviewMode : "TECHNICAL"}
+                      {interview?.interviewMode
+                        ? interview.interviewMode
+                        : "TECHNICAL"}
                     </span>
                   </div>
                 </div>

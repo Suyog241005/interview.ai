@@ -135,7 +135,9 @@ export const submitAnswer = async (req: Request, res: Response) => {
 
 export const getInterview = async (req: Request, res: Response) => {
   try {
-    const { interviewId="cmqox71tl0000acsh68hvk1jx", userId="cmqnpkvia00006ush3cdnie56" } = req.params;
+    const { interviewId, userId } = req.params;
+    console.log(interviewId, "interviewId");
+    console.log(userId, "userId");
 
     if (!interviewId || typeof interviewId !== "string") {
       return res.status(400).json({ message: "Interview ID is required" });
@@ -148,7 +150,7 @@ export const getInterview = async (req: Request, res: Response) => {
     const interview = await prisma.interview.findUniqueOrThrow({
       where: {
         id: "cmqox71tl0000acsh68hvk1jx",
-        userId,
+        userId: "cmqnpkvia00006ush3cdnie56",
       },
     });
 

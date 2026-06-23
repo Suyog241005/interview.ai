@@ -9,4 +9,4 @@ export const interviewRouter = Router();
 
 interviewRouter.post("/start", startInterview);
 interviewRouter.post("/questions", interviewQuestions);
-interviewRouter.get("/get-interview", getInterview);
+interviewRouter.get("/get-interview/:interviewId/:userId", getInterview);
