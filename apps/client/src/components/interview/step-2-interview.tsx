@@ -1,11 +1,6 @@
-import {
-  type Interview,
-  type InterviewSession,
-  type Question,
-} from "@interview.ai/types";
-import { useEffect, useState } from "react";
+import { type Interview, type InterviewSession } from "@interview.ai/types";
+import { useEffect, useRef, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import maleVideo from "@/assets/Videos/male-ai.mp4";
 import femaleVideo from "@/assets/Videos/female-ai.mp4";
 import { Button } from "../ui/button";
 import { speak } from "@/lib/speech-synthesis";
@@ -20,19 +15,147 @@ import axios from "axios";
 import { userAtom } from "@/jotai/atoms";
 import { useAtom } from "jotai";
 
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
+
 export const Step2Interview = ({
   interviewData,
   onComplete,
 }: {
   interviewData: InterviewSession;
-  onComplete: (report: any) => void;
+  onComplete: (report: InterviewSession) => void;
 }) => {
   const [user] = useAtom(userAtom);
-  console.log(user);
   const { id, questions } = interviewData;
   const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState<number>(
+    questions[currentQIndex].timeLimitSeconds,
+  );
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [interview, setInterview] = useState<Interview | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  const transcriptRef = useRef("");
+
+  const [liveTranscript, setLiveTranscript] = useState("");
+
+  const startRecognition = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech Recognition is not supported in this browser");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    transcriptRef.current = "";
+    setLiveTranscript("");
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = "";
+
+      for (let i = 0; i < event.results.length; i++) {
+        finalTranscript += event.results[i][0].transcript;
+      }
+
+      transcriptRef.current = finalTranscript;
+      setLiveTranscript(finalTranscript);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event);
+    };
+
+    recognition.start();
+
+    recognitionRef.current = recognition;
+  };
+
+  const stopRecognition = () => {
+    const recognition = recognitionRef.current;
+
+    if (recognition) {
+      recognition.stop();
+    }
+
+    return transcriptRef.current;
+  };
+
+  const submitAnswer = async ({
+    transcript,
+    questionId,
+    timeTaken,
+  }: {
+    transcript: string;
+    questionId: string;
+    timeTaken: number;
+  }) => {
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/interview/submit-answer`,
+      {
+        interviewId: id,
+        questionId,
+        answer: transcript,
+        timeTaken,
+      },
+      {
+        withCredentials: true,
+      },
+    );
+  };
+
+  const handleNextQuestion = async () => {
+    try {
+      console.log("Timer completed");
+      const question = questions[currentQIndex];
+
+      const transcript = stopRecognition();
+      console.log("Transcript:", transcript);
+
+      await submitAnswer({
+        transcript,
+        questionId: question.id,
+        timeTaken: question.timeLimitSeconds - timeLeft,
+      });
+
+      console.log("Answer submitted");
+
+      if (currentQIndex < questions.length - 1) {
+        const nextIndex = currentQIndex + 1;
+
+        setCurrentQIndex(nextIndex);
+        console.log("Moving to question", nextIndex);
+        setTimeLeft(questions[nextIndex].timeLimitSeconds);
+
+        setTimeout(() => {
+          startRecognition();
+        }, 2000);
+      } else {
+        const report = (
+          await axios.get(
+            `${import.meta.env.VITE_API_URL}/interview/get-report/${id}`,
+            {
+              withCredentials: true,
+            },
+          )
+        ).data as InterviewSession;
+
+        onComplete(report);
+      }
+    } catch (error) {
+      console.error("Failed to process answer:", error);
+    }
+  };
 
   useEffect(() => {
     const response = async () => {
@@ -47,23 +170,20 @@ export const Step2Interview = ({
         )
       ).data;
       setInterview(interview);
-      setTimeout(() => {
-        console.log(interview);
-      }, 5000);
     };
     response();
   }, []);
 
-  // let utterance = new SpeechSynthesisUtterance(
-  //   "Can you tell me about yourself and your background in software development?",
-  // );
-  // speechSynthesis.speak(utterance);
+  // Mount -> Load voice -> Intro Speak ->  Question Speak -> Mic On -> Timer running -> Submit -> Feedback Speak -> Next question
+  // -> Repeat until all questions are answered -> Show report
 
-  // useEffect(() => {
-  //   speak(
-  //     "Can you tell me about yourself and your background in software development?",
-  //   );
-  // }, []);
+  useEffect(() => {
+    if (interviewStarted) {
+      setTimeout(() => {
+        speak(questions[currentQIndex].questionText || "");
+      }, 1000);
+    }
+  }, [currentQIndex, interviewStarted]);
 
   //Mount -> Load voice -> Intro Speak ->  Question Speak -> Mic On -> Timer running -> Submit -> Feedback Speak -> Next question
   // -> Repeat until all questions are answered -> Show report
@@ -95,28 +215,36 @@ export const Step2Interview = ({
               </div>
               <div className="flex justify-center pt-6 border-t border-gray-200">
                 <CountdownCircleTimer
+                  key={currentQIndex}
                   isPlaying={interviewStarted}
-                  duration={
-                    interviewStarted
-                      ? questions[currentQIndex].timeLimitSeconds
-                      : null
-                  }
+                  duration={timeLeft}
                   colors={["#2563eb", "#eab308", "#dc2626"]} // Tailwind colors: Blue -> Yellow -> Red
                   colorsTime={[10, 3, 0]} // Transitions colors based on time remaining
                   size={100}
                   strokeWidth={8}
                   trailColor="#e2e8f0" // Matches shadcn's muted/border slate tracks
+                  onComplete={() => {
+                    // setTimeLeft(0);
+                    handleNextQuestion();
+                    return { shouldRepeat: false };
+                  }}
                 >
                   {({ remainingTime }) => remainingTime}
                 </CountdownCircleTimer>
               </div>
               <div className="grid grid-cols-2 gap-6 text-center mt-4 border-t border-gray-200 py-3">
                 <div className="flex flex-col items-center justify-center">
-                  <span className="text-lg font-semibold"> 1</span>
+                  <span className="text-lg font-semibold">
+                    {" "}
+                    {currentQIndex + 1}{" "}
+                  </span>
                   <span className="text-xs"> Question</span>
                 </div>
                 <div className="flex flex-col items-center justify-center">
-                  <span className="text-lg font-semibold"> 5 </span>
+                  <span className="text-lg font-semibold">
+                    {" "}
+                    {questions.length}{" "}
+                  </span>
                   <span className="text-xs"> Total Questions</span>
                 </div>
               </div>
@@ -152,6 +280,10 @@ export const Step2Interview = ({
               <div className="text-base sm:text-lg font-semibold text-gray-800 leading-relaxed">
                 {questions[currentQIndex].questionText}
               </div>
+
+              <p className="text-sm text-slate-700 min-h-[120px]">
+                {liveTranscript || "Listening..."}
+              </p>
             </div>
           </div>
         ) : (
@@ -228,7 +360,13 @@ export const Step2Interview = ({
             {/* Call to Action Trigger Button Block */}
             <div className="pt-8 border-t border-slate-100 flex justify-end">
               <Button
-                onClick={() => setInterviewStarted(true)}
+                onClick={async () => {
+                  setInterviewStarted(true);
+
+                  setTimeout(async () => {
+                    await startRecognition();
+                  }, 1000);
+                }}
                 className="w-full sm:w-auto px-4 py-6 rounded-xl bg-gray-800 text-white font-bold shadow-lg gap-2 text-base cursor-pointer"
               >
                 <PlayIcon className="h-5 w-5 fill-white " />

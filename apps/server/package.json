@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.81",
+    "@interview.ai/db": "workspace:*",
+    "@interview.ai/types": "workspace:*",
     "ai": "^6.0.202",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -30,8 +32,6 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
     "multer": "^2.1.1",
-    "zod": "^4.4.3",
-    "@interview.ai/types": "workspace:*",
-    "@interview.ai/db": "workspace:*"
+    "zod": "^4.4.3"
   }
 }

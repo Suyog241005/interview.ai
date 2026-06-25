@@ -54,7 +54,7 @@ export const generateInterviewQuestions = async ({
   experience,
   interviewMode,
 }: {
-  resumeAnalysis: ResumeAnalysis;
+  resumeAnalysis?: ResumeAnalysis;
   jobTitle: string;
   experience: string;
   interviewMode: "Technical" | "HR";
@@ -65,13 +65,13 @@ export const generateInterviewQuestions = async ({
 Generate exactly 5 interview questions tailored precisely to this candidate's profile and target job role.
 
 --- CANDIDATE RESUME ANALYSIS ---
-Name: ${resumeAnalysis.name}
-Email: ${resumeAnalysis.email || "Not Provided"}
-Professional Experience: ${resumeAnalysis.experience}
-Core Skills: ${resumeAnalysis.skills ? resumeAnalysis.skills.join(", ") : "Not Provided"}
-Featured Projects: ${resumeAnalysis.projects?.map((p) => `${p.name}: ${p.description}`).join("; ") || "Not Provided"}
-Education Matrix: ${resumeAnalysis.education?.map((e) => `${e.degree} - ${e.institution} (${e.year})`).join("; ") || "Not Provided"}
-Executive Summary: ${resumeAnalysis.summary || "Not Provided"}
+Name: ${resumeAnalysis?.name}
+Email: ${resumeAnalysis?.email || "Not Provided"}
+Professional Experience: ${resumeAnalysis?.experience}
+Core Skills: ${resumeAnalysis?.skills ? resumeAnalysis.skills.join(", ") : "Not Provided"}
+Featured Projects: ${resumeAnalysis?.projects?.map((p) => `${p.name}: ${p.description}`).join("; ") || "Not Provided"}
+Education Matrix: ${resumeAnalysis?.education?.map((e) => `${e.degree} - ${e.institution} (${e.year})`).join("; ") || "Not Provided"}
+Executive Summary: ${resumeAnalysis?.summary || "Not Provided"}
 
 --- INTERVIEW CONFIGURATION ---
 Target Job Title: ${jobTitle}
@@ -139,51 +139,58 @@ Expected JSON schema format:
 };
 
 export const evaluateAnswer = async (
-  question: Question,
+  question: Question[],
 ): Promise<AnswerEvaluation> => {
   try {
+    //Generate a prompt for evaluating the answers
+    //     type Question = {
+    //     id: string;
+    //     category: string | null;
+    //     difficulty: Difficulty;
+    //     questionText: string;
+    //     timeLimitSeconds: number;
+    //     userAnswer: string | null;
+    //     aiFeedback: string | null;
+    //     questionScore: number;
+    //     confidenceScore: number;
+    //     communicationScore: number;
+    //     correctnessScore: number;
+    //     interviewId: string;
+    //     createdAt: Date;
+    //     updatedAt: Date;
+    // }
+    const prompt = `
+You are an expert technical and HR interviewer. Your task is to evaluate the candidate's answers to the following questions.
+For each question, compare the candidate's answer ('userAnswer') against the question text ('questionText').
+
+Evaluate each answer based on:
+1. Correctness: How technically or logically accurate is the answer relative to the question? (Score 0-10)
+2. Communication: How clear, structured, and easy to understand is the explanation? (Score 0-10)
+3. Confidence: How confident does the candidate sound in their answer? (Score 0-10)
+4. Overall Question Score: An average/weighted representation of the answer's quality. (Score 0-10)
+5. AI Feedback: Provide concise, constructive feedback pointing out strengths and specific areas for improvement, keep the feedback under 15 words strictly. Do not repeat the answer; focus purely on constructive feedback.
+
+Here are the questions and the candidate's responses:
+${question
+  .map(
+    (q, i) => `
+    QuestionId : ${q.id}
+      Question ${i + 1}:
+      Category: ${q.category || "General"}
+      Difficulty: ${q.difficulty}
+      Question Text: ${q.questionText}
+      Candidate Answer: ${q.userAnswer || "No answer provided."}
+`,
+  )
+  .join("\n")}
+
+Return a JSON array where each item corresponds to the evaluation of the respective question in the same order as provided above.
+`;
+
     const { text } = await generateText({
       model: google("gemini-2.5-flash"),
       output: Output.object({ schema: AnswerEvaluationSchema }),
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `
-              You are an expert technical or hr interviewer according to question. Evaluate the user's response critically based on the question's difficulty and category if provided.
-              Task: Analyze the user's answer text. Score confidence, communication, and technical/situational correctness on a 0-10 scale.
-              Provide feedback accordingly to the following schema:
-              {
-                "userAnswer": "The answer provided by the user",
-                "confidenceScore": 0-10,
-                "communicationScore": 0-10,
-                "correctnessScore": 0-10,
-                "questionScore": 0-10,
-                "aiFeedback": "Constructive feedback for improvement"
-              }
-              `,
-            },
-            {
-              type: "text",
-              text: `Question: ${question.questionText}`,
-            },
-            {
-              type: "text",
-              text: `Answer: ${question.userAnswer}`,
-            },
-            {
-              type: "text",
-              text: `Difficulty: ${question.difficulty}`,
-            },
-            {
-              type: "text",
-              text: `Category: ${question.category}`,
-            },
-          ],
-        },
-      ],
+      prompt,
     });
 
     const data = JSON.parse(text);
