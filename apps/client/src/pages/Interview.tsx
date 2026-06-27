@@ -2,7 +2,6 @@ import { Step1Setup } from "@/components/interview/step-1-setup";
 import { Step2Interview } from "@/components/interview/step-2-interview";
 import { Step3Report } from "@/components/interview/step-3-report";
 import {
-  DUMMY_INTERVIEW_DATA,
   type InterviewWithQuestion,
 } from "@interview.ai/types";
 import { useState } from "react";
@@ -22,7 +21,7 @@ export default function InterviewPage() {
           }}
         />
       )}
-      {step === 2 && (
+      {step === 2 && interviewData && (
         <Step2Interview
           interviewData={interviewData}
           onComplete={(report) => {
@@ -31,7 +30,7 @@ export default function InterviewPage() {
           }}
         />
       )}
-      {step === 3 && (
+      {step === 3 && interviewData &&(
         <Step3Report
           report={interviewData}
           onRetake={() => {

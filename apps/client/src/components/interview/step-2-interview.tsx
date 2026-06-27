@@ -160,7 +160,7 @@ export const Step2Interview = ({
   useEffect(() => {
     const response = async () => {
       const interviewId = id;
-      const userId = user.id;
+      const userId = user?.id;
       const interview = (
         await axios.get(
           `${import.meta.env.VITE_API_URL}/interview/get-interview/${interviewId}/${userId}`,

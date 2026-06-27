@@ -25,7 +25,6 @@ import { Button } from "../ui/button";
 import axios from "axios";
 import type {
   InterviewWithQuestion,
-  Question,
   ResumeAnalysis,
 } from "@interview.ai/types";
 import { useState } from "react";
@@ -305,8 +304,8 @@ export const Step1Setup = ({
                                 field.onChange(file);
                               }
                               const formData = new FormData();
-                              formData.append("resume", file);
-                              setResumeFileField(file);
+                              formData.append("resume", file!);
+                              setResumeFileField(file!);
                               const response = await axios.post(
                                 `${import.meta.env.VITE_API_URL}/resume/analyze`,
                                 formData,

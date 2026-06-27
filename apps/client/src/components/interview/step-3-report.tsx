@@ -1,17 +1,12 @@
-import { userAtom } from "@/jotai/atoms";
 import type { InterviewWithQuestion, Question } from "@interview.ai/types";
-import { useAtom } from "jotai";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   AwardIcon,
-  BriefcaseIcon,
-  CalendarIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   HomeIcon,
   RefreshCwIcon,
-  StarIcon,
   TrendingUpIcon,
   CheckCircle2Icon,
   MessageSquareIcon,
@@ -26,7 +21,6 @@ export const Step3Report = ({
   report: InterviewWithQuestion;
   onRetake: () => void;
 }) => {
-  const [user] = useAtom(userAtom);
   const navigate = useNavigate();
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(
     report.questions[0]?.id || null,

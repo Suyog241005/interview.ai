@@ -5,7 +5,13 @@
     "apps/*",
     "packages/*"
   ],
-  "scripts": {},
+  "scripts": {
+    "build": "cd apps/server && bun run build && cd ../client && bun run build",
+    "dev": "bun run --workspaces dev",
+    "start": "bun run --workspaces start",
+    "dev:server": "cd apps/server && bun run dev",
+    "dev:client": "cd apps/client && bun run dev"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
