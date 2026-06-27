@@ -62,7 +62,7 @@ export const Step2Interview = ({
     setLiveTranscript("");
 
     recognition.onresult = (event: any) => {
-      let finalTranscript = "";
+      let finalTranscript = " ";
 
       for (let i = 0; i < event.results.length; i++) {
         finalTranscript += event.results[i][0].transcript;

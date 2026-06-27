@@ -8,9 +8,9 @@ import {
 import { useState } from "react";
 
 export default function InterviewPage() {
-  const [step, setStep] = useState<1 | 2 | 3>(3);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [interviewData, setInterviewData] =
-    useState<null | InterviewWithQuestion>(DUMMY_INTERVIEW_DATA);
+    useState<null | InterviewWithQuestion>(null);
 
   return (
     <div className="min-h-screen bg-[#f3f3f3] flex flex-col">
