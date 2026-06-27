@@ -101,11 +101,6 @@ type Question = {
 };
 export { type Question };
 
-export type InterviewSession = {
-  id: string;
-  questions: Question[];
-};
-
 // model Interview {
 //   id            String          @id @default(cuid())
 //   status        InterviewStatus @default(PENDING)
@@ -133,9 +128,21 @@ export type Interview = {
   updatedAt: Date;
 };
 
+export type InterviewWithQuestion = Interview & {
+  questions: Question[];
+};
+
 //InterviewSession
-export const DUMMY_INTERVIEW_DATA: InterviewSession = {
+export const DUMMY_INTERVIEW_DATA: InterviewWithQuestion = {
   id: "cmqtmnxmw0006jnsh38e1h7lx",
+  status: "PENDING",
+  score: 0,
+  role: "Full Stack Developer",
+  experience: "2 years",
+  interviewMode: "video",
+  userId: "1",
+  createdAt: new Date(),
+  updatedAt: new Date(),
   questions: [
     {
       id: "cmqtmo3fx0007jnsh2gpg4z2r",

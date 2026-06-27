@@ -4,7 +4,7 @@ import {
   generateInterviewQuestions,
 } from "../../services/ai.service";
 import { prisma } from "@interview.ai/db";
-import type { InterviewSession, Question } from "@interview.ai/types";
+import type { InterviewWithQuestion, Question } from "@interview.ai/types";
 import fs from "fs";
 
 export const interviewQuestions = async (req: Request, res: Response) => {
@@ -34,19 +34,20 @@ export const interviewQuestions = async (req: Request, res: Response) => {
       })),
     });
 
-    const interviewQuestions = await prisma.question.findMany({
+    const interviewWithQuestions = await prisma.interview.findUniqueOrThrow({
       where: {
-        interviewId,
+        id: interviewId,
       },
-      orderBy: {
-        createdAt: "asc",
+      include: {
+        questions: {
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
       },
     });
 
-    const interviewSession: InterviewSession = {
-      id: interviewId,
-      questions: interviewQuestions,
-    };
+    const interviewSession: InterviewWithQuestion = interviewWithQuestions;
 
     return res.json(interviewSession);
   } catch (error) {
@@ -221,6 +222,20 @@ export const getReport = async (req: Request, res: Response) => {
         finalQuestions.push(updatedQuestion);
       }
     }
+
+    const avgScore =
+      finalQuestions.reduce((acc, q) => acc + q.questionScore, 0) /
+      finalQuestions.length;
+
+    await prisma.interview.update({
+      where: {
+        id,
+      },
+      data: {
+        score: avgScore,
+        status: "COMPLETED",
+      },
+    });
 
     const report = {
       id,

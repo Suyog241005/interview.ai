@@ -1,4 +1,4 @@
-import { type Interview, type InterviewSession } from "@interview.ai/types";
+import { type Interview, type InterviewWithQuestion } from "@interview.ai/types";
 import { useEffect, useRef, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import femaleVideo from "@/assets/Videos/female-ai.mp4";
@@ -26,8 +26,8 @@ export const Step2Interview = ({
   interviewData,
   onComplete,
 }: {
-  interviewData: InterviewSession;
-  onComplete: (report: InterviewSession) => void;
+  interviewData: InterviewWithQuestion;
+  onComplete: (report: InterviewWithQuestion) => void;
 }) => {
   const [user] = useAtom(userAtom);
   const { id, questions } = interviewData;
@@ -148,7 +148,7 @@ export const Step2Interview = ({
               withCredentials: true,
             },
           )
-        ).data as InterviewSession;
+        ).data as InterviewWithQuestion;
 
         onComplete(report);
       }

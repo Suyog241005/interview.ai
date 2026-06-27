@@ -24,7 +24,7 @@ import {
 import { Button } from "../ui/button";
 import axios from "axios";
 import type {
-  InterviewSession,
+  InterviewWithQuestion,
   Question,
   ResumeAnalysis,
 } from "@interview.ai/types";
@@ -54,7 +54,7 @@ export type FormType = z.infer<typeof formSchema>;
 export const Step1Setup = ({
   onStart,
 }: {
-  onStart: (data: InterviewSession) => void;
+  onStart: (data: InterviewWithQuestion) => void;
 }) => {
   const [resumeFileField, setResumeFileField] = useState<File | null>(null);
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(
@@ -83,7 +83,7 @@ export const Step1Setup = ({
           { withCredentials: true },
         )
       ).data;
-      const data = (
+      const data: InterviewWithQuestion = (
         await axios.post(
           `${import.meta.env.VITE_API_URL}/interview/questions`,
           { values, resumeAnalysis, interviewId: interview.id },
@@ -91,10 +91,7 @@ export const Step1Setup = ({
         )
       ).data;
 
-      onStart({
-        id: interview.id,
-        questions: data.questions as Question[],
-      } as InterviewSession);
+      onStart(data);
     } catch (error) {
       console.log(error);
     }
