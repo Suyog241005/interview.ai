@@ -24,7 +24,7 @@ function App() {
     <Routes>
       <Route
         path="/"
-        element={user ? <HomePage /> : <Navigate to={"/auth"} replace />}
+        element={<HomePage />}
       />
       <Route
         path="/auth"

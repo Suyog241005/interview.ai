@@ -5,7 +5,6 @@ import {
 } from "../../services/ai.service";
 import { prisma } from "@interview.ai/db";
 import type { InterviewWithQuestion, Question } from "@interview.ai/types";
-import fs from "fs";
 
 export const interviewQuestions = async (req: Request, res: Response) => {
   try {
@@ -56,17 +55,58 @@ export const interviewQuestions = async (req: Request, res: Response) => {
   }
 };
 
-export const startInterview = async (req: Request, res: Response) => {
+export const createInterview = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
     const { interviewMode, role, experience } = req.body;
 
-    const interview = await prisma.interview.create({
-      data: {
+    const interview = await prisma.$transaction(
+      async (tx) => {
+        const user = await tx.user.findUnique({ where: { id: userId } });
+
+        if (!user || user.credits < 50) {
+          throw new Error("Insufficient credits");
+        }
+
+        const interview = await tx.interview.create({
+          data: { userId: userId!, interviewMode, role, experience },
+        });
+
+        await tx.user.update({
+          where: { id: userId },
+          data: { credits: { decrement: 50 } },
+        });
+
+        return interview;
+      },
+      { maxWait: 10000, timeout: 30000 },
+    );
+
+    return res.json(interview);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to start the interview" });
+  }
+};
+
+export const startInterview = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const interviewid = req.params.id as string;
+
+    if (!interviewid) {
+      return res.status(400).json({
+        message: "Interview Id is required",
+      });
+    }
+
+    const interview = await prisma.interview.update({
+      where: {
+        id: interviewid,
         userId: userId!,
-        interviewMode,
-        role,
-        experience,
+      },
+      data: {
+        status: "IN_PROGRESS",
       },
     });
     return res.json(interview);

@@ -1,4 +1,7 @@
-import { type Interview, type InterviewWithQuestion } from "@interview.ai/types";
+import {
+  type Interview,
+  type InterviewWithQuestion,
+} from "@interview.ai/types";
 import { useEffect, useRef, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import femaleVideo from "@/assets/Videos/female-ai.mp4";
@@ -362,6 +365,12 @@ export const Step2Interview = ({
               <Button
                 onClick={async () => {
                   setInterviewStarted(true);
+
+                  await axios.patch(
+                    `${import.meta.env.VITE_API_URL}/interview/start/${interview?.id}`,
+                    {},
+                    { withCredentials: true },
+                  );
 
                   setTimeout(async () => {
                     await startRecognition();

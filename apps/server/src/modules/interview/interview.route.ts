@@ -3,14 +3,15 @@ import {
   getInterview,
   getReport,
   interviewQuestions,
-  startInterview,
+  createInterview,
   submitAnswer,
+  startInterview,
 } from "./interview.controller";
-import { uploadAudio } from "../../middleware/multer.middleware";
 
 export const interviewRouter = Router();
 
-interviewRouter.post("/start", startInterview);
+interviewRouter.post("/create", createInterview);
+interviewRouter.patch("/start/:id", startInterview);
 interviewRouter.post("/questions", interviewQuestions);
 interviewRouter.get("/get-interview/:interviewId/:userId", getInterview);
 interviewRouter.post("/submit-answer", submitAnswer);

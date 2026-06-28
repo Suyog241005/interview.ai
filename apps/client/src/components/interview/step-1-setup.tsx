@@ -73,7 +73,7 @@ export const Step1Setup = ({
     try {
       const interview = (
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/interview/start`,
+          `${import.meta.env.VITE_API_URL}/interview/create`,
           {
             interviewMode: values.interviewMode,
             role: values.jobTitle,
