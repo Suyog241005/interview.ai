@@ -4,15 +4,71 @@ import {
   generateInterviewQuestions,
 } from "../../services/ai.service";
 import { prisma } from "@interview.ai/db";
-import type { InterviewWithQuestion, Question } from "@interview.ai/types";
+import {
+  CreateInterviewSchema,
+  type InterviewWithQuestion,
+  type Question,
+} from "@interview.ai/types";
+import {
+  InterviewQuestionsRequestSchema,
+  SubmitAnswerSchema,
+} from "@interview.ai/types/interview/types";
+
+export const createInterview = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+
+    const { data, success, error } = CreateInterviewSchema.safeParse(req.body);
+
+    if (!success) {
+      return res.status(400).json({ message: "Invalid data", error });
+    }
+    const { interviewMode, role, experience } = data;
+
+    const interview = await prisma.$transaction(
+      async (tx) => {
+        const user = await tx.user.findUnique({ where: { id: userId } });
+
+        if (!user || user.credits < 50) {
+          throw new Error("Insufficient credits");
+        }
+
+        const interview = await tx.interview.create({
+          data: { userId: userId!, interviewMode, role, experience },
+        });
+
+        await tx.user.update({
+          where: { id: userId },
+          data: { credits: { decrement: 50 } },
+        });
+
+        return interview;
+      },
+      { maxWait: 10000, timeout: 30000 },
+    );
+
+    return res.status(200).json(interview);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to start the interview" });
+  }
+};
 
 export const interviewQuestions = async (req: Request, res: Response) => {
   try {
-    const { values, resumeAnalysis, interviewId } = req.body;
+    const { data, success, error } = InterviewQuestionsRequestSchema.safeParse(
+      req.body,
+    );
+
+    if (!success) {
+      return res.status(400).json({ message: "Invalid data", error });
+    }
+
+    const { resumeAnalysis, values, interviewId } = data;
 
     const aiResult = await generateInterviewQuestions({
       resumeAnalysis,
-      jobTitle: values.jobTitle,
+      jobTitle: values.role,
       experience: values.experience,
       interviewMode: values.interviewMode,
     });
@@ -22,7 +78,7 @@ export const interviewQuestions = async (req: Request, res: Response) => {
     await prisma.question.createMany({
       data: questions.map((q) => ({
         questionText: q.question,
-        interviewId,
+        interviewId: interviewId,
         difficulty: q.difficulty,
         timeLimitSeconds: {
           EASY: 60,
@@ -55,40 +111,6 @@ export const interviewQuestions = async (req: Request, res: Response) => {
   }
 };
 
-export const createInterview = async (req: Request, res: Response) => {
-  try {
-    const { userId } = req;
-    const { interviewMode, role, experience } = req.body;
-
-    const interview = await prisma.$transaction(
-      async (tx) => {
-        const user = await tx.user.findUnique({ where: { id: userId } });
-
-        if (!user || user.credits < 50) {
-          throw new Error("Insufficient credits");
-        }
-
-        const interview = await tx.interview.create({
-          data: { userId: userId!, interviewMode, role, experience },
-        });
-
-        await tx.user.update({
-          where: { id: userId },
-          data: { credits: { decrement: 50 } },
-        });
-
-        return interview;
-      },
-      { maxWait: 10000, timeout: 30000 },
-    );
-
-    return res.json(interview);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to start the interview" });
-  }
-};
-
 export const startInterview = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
@@ -118,15 +140,13 @@ export const startInterview = async (req: Request, res: Response) => {
 
 export const submitAnswer = async (req: Request, res: Response) => {
   try {
-    const { interviewId, questionId, answer, timeTaken } = req.body;
+    const { data, success, error } = SubmitAnswerSchema.safeParse(req.body);
 
-    if (!interviewId) {
-      return res.status(400).json({ message: "InterviewId not found" });
+    if (!success) {
+      return res.status(400).json({ message: "Invalid data", error });
     }
 
-    if (!questionId) {
-      return res.status(400).json({ message: "questionId not found" });
-    }
+    const { interviewId, questionId, answer, timeTaken } = data;
 
     let question = await prisma.question.findFirstOrThrow({
       where: {

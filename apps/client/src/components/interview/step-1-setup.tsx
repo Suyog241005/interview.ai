@@ -30,7 +30,7 @@ import type {
 import { useState } from "react";
 
 const formSchema = z.object({
-  jobTitle: z.string().min(3, "Job title must be at least 3 characters"),
+  role: z.string().min(3, "Job title must be at least 3 characters"),
   experience: z.string(),
   interviewMode: z.enum(["TECHNICAL", "HR"], {
     error: "Mode must be Technical or HR",
@@ -62,7 +62,7 @@ export const Step1Setup = ({
   const form = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      jobTitle: "",
+      role: "",
       experience: "",
       interviewMode: "TECHNICAL",
       resume: undefined,
@@ -76,7 +76,7 @@ export const Step1Setup = ({
           `${import.meta.env.VITE_API_URL}/interview/create`,
           {
             interviewMode: values.interviewMode,
-            role: values.jobTitle,
+            role: values.role,
             experience: values.experience,
           },
           { withCredentials: true },
@@ -166,7 +166,7 @@ export const Step1Setup = ({
             >
               <FieldGroup>
                 <Controller
-                  name="jobTitle"
+                  name="role"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
@@ -318,9 +318,9 @@ export const Step1Setup = ({
                               );
                               const data: ResumeAnalysis = response.data;
                               console.log(data);
-                              const jobTitle = data.suggestedRoles[0];
+                              const role = data.suggestedRoles[0];
                               const experience = data.experience;
-                              form.setValue("jobTitle", jobTitle, {
+                              form.setValue("role", role, {
                                 shouldDirty: true,
                               });
                               form.setValue("experience", experience, {

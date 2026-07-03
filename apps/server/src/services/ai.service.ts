@@ -9,6 +9,7 @@ import {
   type ResumeAnalysis,
 } from "@interview.ai/types";
 import type { Question } from "@interview.ai/db/generated/prisma/client";
+import type { InterviewMode } from "@interview.ai/types/db/types";
 
 // // Service function to analyze PDF resume and return structured data
 export const analyzeResume = async (
@@ -57,7 +58,7 @@ export const generateInterviewQuestions = async ({
   resumeAnalysis?: ResumeAnalysis;
   jobTitle: string;
   experience: string;
-  interviewMode: "Technical" | "HR";
+  interviewMode: InterviewMode;
 }): Promise<InterviewQuestions> => {
   try {
     // Construct prompt with all relevant details

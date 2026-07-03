@@ -1,13 +1,14 @@
 import type { Request, Response } from "express";
-import { AuthSchema } from "../../zod";
 import { genToken } from "../../utils/token";
 import { prisma } from "@interview.ai/db";
+import { AuthSchema } from "@interview.ai/types";
 
 export const authController = async (req: Request, res: Response) => {
   try {
     const { name, email, photoUrl } = req.body;
 
     const { success } = AuthSchema.safeParse(req.body);
+
     if (!success) {
       return res.status(400).json({
         message: "Invalid input",
