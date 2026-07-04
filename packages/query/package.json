@@ -1,0 +1,17 @@
+{
+  "name": "@interview.ai/query",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@tanstack/react-query": "^5.101.2",
+    "@inteview.ai/api": "workspace:*",
+    "@interview.ai/types": "workspace:*"
+  }
+}

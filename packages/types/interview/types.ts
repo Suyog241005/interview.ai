@@ -17,7 +17,7 @@ export type CreateInterviewResponse = Interview;
 
 export const InterviewQuestionsRequestSchema = z.object({
   interviewId: z.string(),
-  resumeAnalysis: ResumeAnalysisSchema,
+  resumeAnalysis: ResumeAnalysisSchema.nullable(),
   values: CreateInterviewSchema,
 });
 
@@ -36,7 +36,9 @@ export const SubmitAnswerSchema = z.object({
 export type SubmitAnswerRequest = z.infer<typeof SubmitAnswerSchema>;
 export type SubmitAnswerResponse = Question;
 
-export type GetReportResponse = {
-  id: string;
-  questions: Question[];
-};
+export const GenerateReportRequestSchema = z.object({
+  interviewId: z.string(),
+});
+
+export type GenerateReportRequest = z.infer<typeof GenerateReportRequestSchema>;
+export type GenerateReportResponse = InterviewWithQuestion;

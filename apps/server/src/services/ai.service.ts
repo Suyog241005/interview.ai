@@ -51,31 +51,35 @@ export const analyzeResume = async (
 // Service function to generate interview questions based on resume and job role
 export const generateInterviewQuestions = async ({
   resumeAnalysis,
-  jobTitle,
+  role,
   experience,
   interviewMode,
 }: {
-  resumeAnalysis?: ResumeAnalysis;
-  jobTitle: string;
+  resumeAnalysis?: ResumeAnalysis | null;
+  role: string;
   experience: string;
   interviewMode: InterviewMode;
 }): Promise<InterviewQuestions> => {
   try {
+    const resumeInfo = resumeAnalysis
+      ? `Name: ${resumeAnalysis.name}
+Email: ${resumeAnalysis.email || "Not Provided"}
+Professional Experience: ${resumeAnalysis.experience}
+Core Skills: ${resumeAnalysis.skills ? resumeAnalysis.skills.join(", ") : "Not Provided"}
+Featured Projects: ${resumeAnalysis.projects?.map((p) => `${p.name}: ${p.description}`).join("; ") || "Not Provided"}
+Education Matrix: ${resumeAnalysis.education?.map((e) => `${e.degree} - ${e.institution} (${e.year})`).join("; ") || "Not Provided"}
+Executive Summary: ${resumeAnalysis.summary || "Not Provided"}`
+      : "No resume was provided. Generate standard role-related questions.";
+
     // Construct prompt with all relevant details
     const prompt = `You are an expert enterprise tech and HR recruiter. 
 Generate exactly 5 interview questions tailored precisely to this candidate's profile and target job role.
 
 --- CANDIDATE RESUME ANALYSIS ---
-Name: ${resumeAnalysis?.name}
-Email: ${resumeAnalysis?.email || "Not Provided"}
-Professional Experience: ${resumeAnalysis?.experience}
-Core Skills: ${resumeAnalysis?.skills ? resumeAnalysis.skills.join(", ") : "Not Provided"}
-Featured Projects: ${resumeAnalysis?.projects?.map((p) => `${p.name}: ${p.description}`).join("; ") || "Not Provided"}
-Education Matrix: ${resumeAnalysis?.education?.map((e) => `${e.degree} - ${e.institution} (${e.year})`).join("; ") || "Not Provided"}
-Executive Summary: ${resumeAnalysis?.summary || "Not Provided"}
+${resumeInfo}
 
 --- INTERVIEW CONFIGURATION ---
-Target Job Title: ${jobTitle}
+Target Job Title: ${role}
 Required Experience Level: ${experience}
 Interview Category Track: ${interviewMode} (Options: TECHNICAL or HR)
 

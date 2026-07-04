@@ -14,9 +14,12 @@ import {
   PlayIcon,
   ShieldAlertIcon,
 } from "lucide-react";
-import axios from "axios";
-import { userAtom } from "@/jotai/atoms";
-import { useAtom } from "jotai";
+import {
+  useGetInterview,
+  useGenerateReport,
+  useStartInterview,
+  useSubmitAnswer,
+} from "@interview.ai/query";
 
 declare global {
   interface Window {
@@ -32,7 +35,6 @@ export const Step2Interview = ({
   interviewData: InterviewWithQuestion;
   onComplete: (report: InterviewWithQuestion) => void;
 }) => {
-  const [user] = useAtom(userAtom);
   const { id, questions } = interviewData;
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState<number>(
@@ -46,6 +48,11 @@ export const Step2Interview = ({
 
   const [liveTranscript, setLiveTranscript] = useState("");
 
+  const { mutateAsync: submitAnswerMutation } = useSubmitAnswer();
+  const { mutateAsync: startInterviewMutation } = useStartInterview();
+  const { mutateAsync: generateReportMutation } = useGenerateReport();
+  const { data: fetchedInterviewData } = useGetInterview({ interviewId: id });
+
   const startRecognition = () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -53,6 +60,14 @@ export const Step2Interview = ({
     if (!SpeechRecognition) {
       alert("Speech Recognition is not supported in this browser");
       return;
+    }
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {
+        console.error("Failed to abort previous recognition:", e);
+      }
     }
 
     const recognition = new SpeechRecognition();
@@ -103,18 +118,16 @@ export const Step2Interview = ({
     questionId: string;
     timeTaken: number;
   }) => {
-    await axios.post(
-      `${import.meta.env.VITE_API_URL}/interview/submit-answer`,
-      {
+    try {
+      await submitAnswerMutation({
         interviewId: id,
         questionId,
         answer: transcript,
         timeTaken,
-      },
-      {
-        withCredentials: true,
-      },
-    );
+      });
+    } catch (error) {
+      console.error("Failed to submit answer:", error);
+    }
   };
 
   const handleNextQuestion = async () => {
@@ -139,21 +152,11 @@ export const Step2Interview = ({
         setCurrentQIndex(nextIndex);
         console.log("Moving to question", nextIndex);
         setTimeLeft(questions[nextIndex].timeLimitSeconds);
-
-        setTimeout(() => {
-          startRecognition();
-        }, 2000);
       } else {
-        const report = (
-          await axios.get(
-            `${import.meta.env.VITE_API_URL}/interview/get-report/${id}`,
-            {
-              withCredentials: true,
-            },
-          )
-        ).data as InterviewWithQuestion;
-
-        onComplete(report);
+        const report = await generateReportMutation({ interviewId: id });
+        if (report) {
+          onComplete(report.data);
+        }
       }
     } catch (error) {
       console.error("Failed to process answer:", error);
@@ -161,21 +164,11 @@ export const Step2Interview = ({
   };
 
   useEffect(() => {
-    const response = async () => {
-      const interviewId = id;
-      const userId = user?.id;
-      const interview = (
-        await axios.get(
-          `${import.meta.env.VITE_API_URL}/interview/get-interview/${interviewId}/${userId}`,
-          {
-            withCredentials: true,
-          },
-        )
-      ).data;
-      setInterview(interview);
-    };
-    response();
-  }, []);
+    console.log(fetchedInterviewData);
+    if (fetchedInterviewData) {
+      setInterview(fetchedInterviewData.data);
+    }
+  }, [fetchedInterviewData]);
 
   // Mount -> Load voice -> Intro Speak ->  Question Speak -> Mic On -> Timer running -> Submit -> Feedback Speak -> Next question
   // -> Repeat until all questions are answered -> Show report
@@ -183,10 +176,23 @@ export const Step2Interview = ({
   useEffect(() => {
     if (interviewStarted) {
       setTimeout(() => {
-        speak(questions[currentQIndex].questionText || "");
+        speak(questions[currentQIndex].questionText || "", () => {
+          startRecognition();
+        });
       }, 1000);
     }
   }, [currentQIndex, interviewStarted]);
+
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
+      }
+    };
+  }, []);
 
   //Mount -> Load voice -> Intro Speak ->  Question Speak -> Mic On -> Timer running -> Submit -> Feedback Speak -> Next question
   // -> Repeat until all questions are answered -> Show report
@@ -364,17 +370,26 @@ export const Step2Interview = ({
             <div className="pt-8 border-t border-slate-100 flex justify-end">
               <Button
                 onClick={async () => {
-                  setInterviewStarted(true);
-
-                  await axios.patch(
-                    `${import.meta.env.VITE_API_URL}/interview/start/${interview?.id}`,
-                    {},
-                    { withCredentials: true },
-                  );
-
-                  setTimeout(async () => {
-                    await startRecognition();
-                  }, 1000);
+                  try {
+                    setInterviewStarted(true);
+                    await startInterviewMutation(
+                      {
+                        interviewId: id,
+                      },
+                      {
+                        onSuccess: async () => {
+                          // Handled automatically by the speak callback in useEffect
+                        },
+                        onError: (err) => {
+                          setInterviewStarted(false);
+                          console.error(err);
+                          alert("Failed to start interview");
+                        },
+                      },
+                    );
+                  } catch (error) {
+                    setInterviewStarted(false);
+                  }
                 }}
                 className="w-full sm:w-auto px-4 py-6 rounded-xl bg-gray-800 text-white font-bold shadow-lg gap-2 text-base cursor-pointer"
               >

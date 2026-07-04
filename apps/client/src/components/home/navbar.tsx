@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useNavigate } from "react-router";
 import { BrainCircuitIcon, CircleDollarSignIcon } from "lucide-react";
 import { useAtom } from "jotai";
@@ -14,22 +13,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useLogout } from "@interview.ai/query";
 
 export const Navbar = () => {
   const [user, setUser] = useAtom(userAtom);
   const navigate = useNavigate();
+  const { mutateAsync } = useLogout();
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/logout`,
-        {},
-        { withCredentials: true },
-      );
-      if (response.status === 200) {
-        setUser(null);
-        navigate("/");
-      }
+      await mutateAsync();
+      setUser(null);
+      navigate("/");
     } catch (error) {
       console.log(error);
     }
@@ -82,7 +77,7 @@ export const Navbar = () => {
                     >
                       <Avatar>
                         <AvatarImage
-                          src={user.photoUrl}
+                          src={user.photoUrl || ""}
                           alt={user.name}
                           referrerPolicy="no-referrer"
                         />

@@ -5,7 +5,8 @@ import type {
 } from "@interview.ai/types";
 import type { APIClient } from "./api-client";
 import type {
-  GetReportResponse,
+  GenerateReportRequest,
+  GenerateReportResponse,
   InterviewQuestionsRequest,
   InterviewQuestionsResponse,
   SubmitAnswerRequest,
@@ -46,15 +47,16 @@ export class InterviewAPI {
     );
   }
 
-  getInterview(data: { interviewId: string; userId: string }) {
+  getInterview(data: { interviewId: string }) {
     return this.client.get<Interview>(
-      `/interview/get-interview/${data.interviewId}/${data.userId}`,
+      `/interview/get-interview/${data.interviewId}/`,
     );
   }
 
-  getReport(data: { id: string }) {
-    return this.client.get<GetReportResponse>(
-      `/interview/get-report/${data.id}`,
+  generateReport(data: GenerateReportRequest) {
+    return this.client.post<GenerateReportResponse, GenerateReportRequest>(
+      `/interview/generate-report/`,
+      data,
     );
   }
 }

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
   getInterview,
-  getReport,
+  generateReport,
   interviewQuestions,
   createInterview,
   submitAnswer,
@@ -13,6 +13,6 @@ export const interviewRouter = Router();
 interviewRouter.post("/create", createInterview);
 interviewRouter.patch("/start/:id", startInterview);
 interviewRouter.post("/questions", interviewQuestions);
-interviewRouter.get("/get-interview/:interviewId/:userId", getInterview);
+interviewRouter.get("/get-interview/:interviewId", getInterview);
 interviewRouter.post("/submit-answer", submitAnswer);
-interviewRouter.get("/get-report/:id", getReport);
+interviewRouter.post("/generate-report", generateReport);
