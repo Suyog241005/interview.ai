@@ -6,11 +6,11 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "cd apps/server && bun run build && cd ../client && bun run build",
+    "build": "cd apps/server && bun run build && cd ../candidate-web && bun run build",
     "dev": "bun run --workspaces dev",
     "start": "bun run --workspaces start",
     "dev:server": "cd apps/server && bun run dev",
-    "dev:client": "cd apps/client && bun run dev"
+    "dev:client": "cd apps/candidate-web && bun run dev"
   },
   "keywords": [],
   "author": "",
