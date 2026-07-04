@@ -10,6 +10,7 @@ import {
   type Question,
 } from "@interview.ai/types";
 import {
+  GenerateReportRequestSchema,
   InterviewQuestionsRequestSchema,
   SubmitAnswerSchema,
 } from "@interview.ai/types/interview/types";
@@ -68,7 +69,7 @@ export const interviewQuestions = async (req: Request, res: Response) => {
 
     const aiResult = await generateInterviewQuestions({
       resumeAnalysis,
-      jobTitle: values.role,
+      role: values.role,
       experience: values.experience,
       interviewMode: values.interviewMode,
     });
@@ -211,7 +212,8 @@ export const submitAnswer = async (req: Request, res: Response) => {
 
 export const getInterview = async (req: Request, res: Response) => {
   try {
-    const { interviewId, userId } = req.params;
+    const { userId } = req;
+    const { interviewId } = req.params;
     console.log(interviewId, "interviewId");
     console.log(userId, "userId");
 
@@ -243,19 +245,19 @@ export const getInterview = async (req: Request, res: Response) => {
   }
 };
 
-export const getReport = async (req: Request, res: Response) => {
+export const generateReport = async (req: Request, res: Response) => {
   try {
-    const params = req.params;
+    const { data, success, error } = GenerateReportRequestSchema.safeParse(req.body);
 
-    const id = params.id as string;
-
-    if (!id) {
-      return res.status(400).json({ message: "Interview Id is required" });
+    if (!success) {
+      return res.status(400).json({ message: "Invalid data", error });
     }
+
+    const { interviewId } = data;
 
     const questions = await prisma.question.findMany({
       where: {
-        interviewId: id,
+        interviewId,
       },
     });
 
@@ -287,22 +289,20 @@ export const getReport = async (req: Request, res: Response) => {
       finalQuestions.reduce((acc, q) => acc + q.questionScore, 0) /
       finalQuestions.length;
 
-    await prisma.interview.update({
+    const interview = await prisma.interview.update({
       where: {
-        id,
+        id: interviewId,
       },
       data: {
         score: avgScore,
         status: "COMPLETED",
       },
+      include: {
+        questions: true,
+      },
     });
 
-    const report = {
-      id,
-      questions: finalQuestions,
-    };
-
-    return res.json(report);
+    return res.json(interview);
   } catch (error) {
     console.error(error);
     return res.status(500).json({

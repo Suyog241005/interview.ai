@@ -1,4 +1,3 @@
-import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrainCircuitIcon, SparklesIcon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
@@ -7,24 +6,30 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { userAtom } from "@/jotai/atoms";
 import { useAtom } from "jotai";
+import { useLogin } from "@interview.ai/query";
 
 export default function AuthPage() {
   const [_user, setUser] = useAtom(userAtom);
+  const { mutateAsync } = useLogin();
   const handleGoogleAuth = async () => {
     try {
       const data = await signInWithPopup(auth, googleProvider);
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth`,
-        {
-          name: data.user.displayName,
-          email: data.user.email,
-          photoUrl: data.user.photoURL,
-        },
-        { withCredentials: true },
-      );
-      if (response.status === 200) {
-        const userData = response.data.user;
-        setUser(userData);
+      if (data && data.user && data.user.displayName && data.user.email) {
+        await mutateAsync(
+          {
+            name: data.user.displayName,
+            email: data.user.email,
+            photoUrl: data.user.photoURL || "",
+          },
+          {
+            onSuccess: ({ data }) => {
+              setUser(data.user);
+            },
+            onError: (error) => {
+              alert(error.message);
+            },
+          },
+        );
       }
     } catch (error) {
       console.log(error);

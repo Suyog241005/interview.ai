@@ -2,30 +2,33 @@ import { Navigate, Route, Routes } from "react-router";
 import HomePage from "./pages/Home";
 import AuthPage from "./pages/Auth";
 import { useEffect } from "react";
-import axios from "axios";
 import { useAtom } from "jotai";
 import { userAtom } from "./jotai/atoms";
 import InterviewPage from "./pages/Interview";
+import { useGetUser } from "@interview.ai/query";
+import { Loader2Icon } from "lucide-react";
 
 function App() {
   const [user, setUser] = useAtom(userAtom);
+  const { data, isLoading } = useGetUser();
+
   useEffect(() => {
-    const getUser = async () => {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/user`, {
-        withCredentials: true,
-      });
-      if (response.status === 200) {
-        setUser(response.data.user);
-      }
-    };
-    getUser();
-  }, []);
+    if (data) {
+      setUser(data.user);
+    }
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2Icon className="animate-spin text-primary" size={32} />
+      </div>
+    );
+  }
+
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<HomePage />}
-      />
+      <Route path="/" element={<HomePage />} />
       <Route
         path="/auth"
         element={user ? <Navigate to={"/"} replace /> : <AuthPage />}

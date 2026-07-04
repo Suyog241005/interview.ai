@@ -22,12 +22,16 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Button } from "../ui/button";
-import axios from "axios";
 import type {
   InterviewWithQuestion,
   ResumeAnalysis,
 } from "@interview.ai/types";
 import { useState } from "react";
+import {
+  useAnalyzeResume,
+  useCreateInterview,
+  useCreateInterviewQuestions,
+} from "@interview.ai/query";
 
 const formSchema = z.object({
   role: z.string().min(3, "Job title must be at least 3 characters"),
@@ -59,6 +63,11 @@ export const Step1Setup = ({
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(
     null,
   );
+  const { mutateAsync: createInterviewMutation } = useCreateInterview();
+  const { mutateAsync: createInterviewQuestionsMutation } =
+    useCreateInterviewQuestions();
+  const { mutateAsync: analyzeResumeMutation } = useAnalyzeResume();
+
   const form = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -71,26 +80,41 @@ export const Step1Setup = ({
 
   const onSubmit = async (values: FormType) => {
     try {
-      const interview = (
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/interview/create`,
-          {
-            interviewMode: values.interviewMode,
-            role: values.role,
-            experience: values.experience,
+      await createInterviewMutation(
+        {
+          interviewMode: values.interviewMode,
+          role: values.role,
+          experience: values.experience,
+        },
+        {
+          onSuccess: async ({ data: newInterview }) => {
+            try {
+              await createInterviewQuestionsMutation(
+                {
+                  interviewId: newInterview.id,
+                  resumeAnalysis,
+                  values,
+                },
+                {
+                  onSuccess: ({ data }) => {
+                    onStart(data);
+                  },
+                  onError: (err) => {
+                    console.log(err);
+                    alert(`Something went wrong ${err.message}`);
+                  },
+                },
+              );
+            } catch (error) {
+              console.log(error);
+            }
           },
-          { withCredentials: true },
-        )
-      ).data;
-      const data: InterviewWithQuestion = (
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/interview/questions`,
-          { values, resumeAnalysis, interviewId: interview.id },
-          { withCredentials: true },
-        )
-      ).data;
-
-      onStart(data);
+          onError: (err) => {
+            console.log(err);
+            alert(`Something went wrong ${err.message}`);
+          },
+        },
+      );
     } catch (error) {
       console.log(error);
     }
@@ -306,27 +330,20 @@ export const Step1Setup = ({
                               const formData = new FormData();
                               formData.append("resume", file!);
                               setResumeFileField(file!);
-                              const response = await axios.post(
-                                `${import.meta.env.VITE_API_URL}/resume/analyze`,
-                                formData,
-                                {
-                                  headers: {
-                                    "Content-Type": "multipart/form-data",
-                                  },
-                                  withCredentials: true,
+                              await analyzeResumeMutation(formData, {
+                                onSuccess: ({ data }) => {
+                                  console.log(data);
+                                  const role = data.suggestedRoles[0];
+                                  const experience = data.experience;
+                                  form.setValue("role", role, {
+                                    shouldDirty: true,
+                                  });
+                                  form.setValue("experience", experience, {
+                                    shouldDirty: true,
+                                  });
+                                  setResumeAnalysis(data);
                                 },
-                              );
-                              const data: ResumeAnalysis = response.data;
-                              console.log(data);
-                              const role = data.suggestedRoles[0];
-                              const experience = data.experience;
-                              form.setValue("role", role, {
-                                shouldDirty: true,
                               });
-                              form.setValue("experience", experience, {
-                                shouldDirty: true,
-                              });
-                              setResumeAnalysis(data);
                             }}
                           />
                         </div>
