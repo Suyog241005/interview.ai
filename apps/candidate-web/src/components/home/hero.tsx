@@ -68,13 +68,16 @@ export const Hero = () => {
               </DialogContent>
             </Dialog>
           )}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 rounded-full font-semibold border border-gray-200 bg-gray-50 cursor-pointer"
-          >
-            View History
-          </motion.button>
+          {user && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 rounded-full font-semibold border border-gray-200 bg-gray-50 cursor-pointer"
+              onClick={() => navigate("/history")}
+            >
+              View History
+            </motion.button>
+          )}
         </div>
       </div>
     </>

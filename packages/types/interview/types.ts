@@ -42,3 +42,6 @@ export const GenerateReportRequestSchema = z.object({
 
 export type GenerateReportRequest = z.infer<typeof GenerateReportRequestSchema>;
 export type GenerateReportResponse = InterviewWithQuestion;
+
+
+export type GetInterviewHistoryResponse = InterviewWithQuestion[];

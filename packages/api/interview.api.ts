@@ -7,6 +7,7 @@ import type { APIClient } from "./api-client";
 import type {
   GenerateReportRequest,
   GenerateReportResponse,
+  GetInterviewHistoryResponse,
   InterviewQuestionsRequest,
   InterviewQuestionsResponse,
   SubmitAnswerRequest,
@@ -58,5 +59,9 @@ export class InterviewAPI {
       `/interview/generate-report/`,
       data,
     );
+  }
+
+  getInterviewHistory() {
+    return this.client.get<GetInterviewHistoryResponse>("/interview/history");
   }
 }

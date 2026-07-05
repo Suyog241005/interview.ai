@@ -247,7 +247,9 @@ export const getInterview = async (req: Request, res: Response) => {
 
 export const generateReport = async (req: Request, res: Response) => {
   try {
-    const { data, success, error } = GenerateReportRequestSchema.safeParse(req.body);
+    const { data, success, error } = GenerateReportRequestSchema.safeParse(
+      req.body,
+    );
 
     if (!success) {
       return res.status(400).json({ message: "Invalid data", error });
@@ -307,6 +309,40 @@ export const generateReport = async (req: Request, res: Response) => {
     console.error(error);
     return res.status(500).json({
       message: "Failed to retrieve interview report. Please try again.",
+    });
+  }
+};
+
+export const getInterviewHistory = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const interview = await prisma.interview.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        questions: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!interview) {
+      return res.status(404).json({
+        message: "No interview found",
+      });
+    }
+
+    return res.json(interview);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch interview history. Please try again.",
     });
   }
 };

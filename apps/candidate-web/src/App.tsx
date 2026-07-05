@@ -7,10 +7,13 @@ import { userAtom } from "./jotai/atoms";
 import InterviewPage from "./pages/Interview";
 import { useGetUser } from "@interview.ai/query";
 import { Loader2Icon } from "lucide-react";
+import InterviewHistoryPage from "./pages/InterviewHistory";
 
 function App() {
   const [user, setUser] = useAtom(userAtom);
   const { data, isLoading } = useGetUser();
+
+  const currentUser = user || data?.user;
 
   useEffect(() => {
     if (data) {
@@ -31,11 +34,15 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route
         path="/auth"
-        element={user ? <Navigate to={"/"} replace /> : <AuthPage />}
+        element={currentUser ? <Navigate to={"/"} replace /> : <AuthPage />}
       />
       <Route
         path="/interview"
-        element={user ? <InterviewPage /> : <Navigate to={"/auth"} replace />}
+        element={currentUser ? <InterviewPage /> : <Navigate to={"/auth"} replace />}
+      />
+      <Route
+        path="/history"
+        element={currentUser ? <InterviewHistoryPage /> : <Navigate to={"/auth"} replace />}
       />
     </Routes>
   );
