@@ -1,7 +1,7 @@
 import { SparklesIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@interview.ai/ui/dialog";
 import { AuthDialog } from "../auth/auth-dialog";
 import { userAtom } from "@/jotai/atoms";
 import { useAtom } from "jotai";

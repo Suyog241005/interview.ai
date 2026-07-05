@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@interview.ai/ui/card";
 import { BrainCircuitIcon, SparklesIcon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "motion/react";

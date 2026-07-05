@@ -3,8 +3,8 @@ import { BrainCircuitIcon, CircleDollarSignIcon } from "lucide-react";
 import { useAtom } from "jotai";
 import { userAtom } from "@/jotai/atoms";
 import { motion } from "motion/react";
-import { Button } from "../ui/button";
-import { Avatar, AvatarBadge, AvatarImage } from "../ui/avatar";
+import { Button } from "@interview.ai/ui/button";
+import { Avatar, AvatarBadge, AvatarImage } from "@interview.ai/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@interview.ai/ui/dropdown-menu";
 import { useLogout } from "@interview.ai/query";
 
 export const Navbar = () => {

@@ -10,9 +10,9 @@ import { motion } from "motion/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Controller, useForm } from "react-hook-form";
-import { Card } from "../ui/card";
-import { Input } from "../ui/input";
-import { Field, FieldError, FieldGroup } from "../ui/field";
+import { Card } from "@interview.ai/ui/card";
+import { Input } from "@interview.ai/ui/input";
+import { Field, FieldError, FieldGroup } from "@interview.ai/ui/field";
 import {
   Select,
   SelectContent,
@@ -20,8 +20,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import { Button } from "../ui/button";
+} from "@interview.ai/ui/select";
+import { Button } from "@interview.ai/ui/button";
 import type {
   InterviewWithQuestion,
   ResumeAnalysis,

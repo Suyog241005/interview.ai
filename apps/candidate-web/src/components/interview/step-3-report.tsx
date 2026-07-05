@@ -11,7 +11,7 @@ import {
   CheckCircle2Icon,
   MessageSquareIcon,
 } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@interview.ai/ui/button";
 import { useNavigate } from "react-router";
 
 export const Step3Report = ({

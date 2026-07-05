@@ -7,7 +7,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@interview.ai/ui/*": ["../../packages/ui/src/*"],
+      "@interview.ai/ui": ["../../packages/ui/src/components/ui"]
     }
   }
 }

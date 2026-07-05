@@ -5,7 +5,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import femaleVideo from "@/assets/Videos/female-ai.mp4";
-import { Button } from "../ui/button";
+import { Button } from "@interview.ai/ui/button";
 import { speak } from "@/lib/speech-synthesis";
 import {
   BriefcaseIcon,

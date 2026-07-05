@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@interview.ai/ui/card";
 import { BrainCircuitIcon, SparklesIcon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { useAtom } from "jotai";
