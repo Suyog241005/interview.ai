@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@interview.ai/ui/*": ["../../packages/ui/src/*"],
+      "@interview.ai/ui": ["../../packages/ui/src/components/ui"]
+    }
+  }
+}
