@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "services/*"
   ],
   "scripts": {
     "build": "cd apps/server && bun run build && cd ../candidate-web && bun run build",
