@@ -176,6 +176,7 @@
     "packages/types": {
       "name": "@interview.ai/types",
       "dependencies": {
+        "@interview.ai/db": "*",
         "zod": "^4.4.3",
       },
       "devDependencies": {
