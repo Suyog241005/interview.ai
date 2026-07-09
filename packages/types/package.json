@@ -10,6 +10,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@interview.ai/db": "*",
     "zod": "^4.4.3"
   }
 }

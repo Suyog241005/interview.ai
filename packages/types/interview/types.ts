@@ -1,13 +1,13 @@
 import z from "zod";
-import { InterviewModes, type Interview, type Question } from "../db/types";
-import { ResumeAnalysisSchema } from "../resume";
+import { InterviewMode, type Interview, type Question } from "../db/types";
+import { ResumeAnalysisSchema } from "../resume/types";
 
 export type InterviewWithQuestion = Interview & {
   questions: Question[];
 };
 
 export const CreateInterviewSchema = z.object({
-  interviewMode: z.enum(InterviewModes),
+  interviewMode: z.enum(InterviewMode),
   role: z.string(),
   experience: z.string(),
 });
@@ -42,6 +42,5 @@ export const GenerateReportRequestSchema = z.object({
 
 export type GenerateReportRequest = z.infer<typeof GenerateReportRequestSchema>;
 export type GenerateReportResponse = InterviewWithQuestion;
-
 
 export type GetInterviewHistoryResponse = InterviewWithQuestion[];

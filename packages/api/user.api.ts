@@ -1,5 +1,5 @@
 import type { APIClient } from "./api-client";
-import { type GetUserResponse } from "@interview.ai/types/user";
+import { type GetUserResponse } from "@interview.ai/types";
 
 export class UserAPI {
   private client: APIClient;
