@@ -8,42 +8,228 @@ datasource db {
 }
 
 model User {
-  id         String      @id @default(cuid())
-  name       String
-  email      String      @unique
-  photoUrl   String?
-  credits    Int         @default(100)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  interviews Interview[]
-}
+  id       String  @id @default(cuid())
+  name     String
+  email    String  @unique
+  photoUrl String?
 
-enum InterviewMode {
-  TECHNICAL
-  HR
-}
-
-enum InterviewStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-}
-
-model Interview {
-  id            String          @id @default(cuid())
-  status        InterviewStatus @default(PENDING)
-  score         Int             @default(0)
-  role          String
-  experience    String
-  interviewMode InterviewMode
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  questions Question[]
+  candidate Candidate?
+  recruiter Recruiter?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  company   Company?
+}
+
+model Candidate {
+  id      String @id @default(cuid())
+  credits Int    @default(100)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  interviews  Interview[]
+  invitations Invitation[]
+  resumes     Resume[]
+
+  @@index([userId])
+}
+
+model Company {
+  id      String @id @default(cuid())
+  credits Int    @default(100)
+
+  name    String
+  website String?
+  logoUrl String?
+
+  ownerId String @unique
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  recruiters Recruiter[]
+  jobs       Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Recruiter {
+  id          String  @id @default(cuid())
+  designation String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyId     String
+  company       Company        @relation(fields: [companyId], references: [id],onDelete: Cascade)
+  jobRecruiters JobRecruiter[]
+
+  @@index([companyId])
+}
+
+model Job {
+  id                 String    @id @default(cuid())
+  title              String
+  description        String    @db.Text
+  status             JobStatus @default(DRAFT)
+  minExperienceYears Int
+  maxExperienceYears Int?
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  interviews      Interview[]
+  jobRecruiters   JobRecruiter[]
+  invitations     Invitation[]
+  interviewConfig InterviewConfig?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model JobRecruiter {
+  jobId       String
+  recruiterId String
+
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([jobId, recruiterId])
+  @@index([recruiterId])
+  @@index([jobId])
+}
+
+model Interview {
+  id          String          @id @default(cuid())
+  type        InterviewType
+  status      InterviewStatus @default(PENDING)
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  jobId String?
+  job   Job?    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  resumeId String?
+  resume   Resume? @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  questions   Question[]
+  invitations Invitation[]
+  report      InterviewReport?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([jobId])
+  @@index([status])
+  @@index([resumeId])
+}
+
+model InterviewReport {
+  id             String   @id @default(cuid())
+  overallScore   Int
+  strengths      String[]
+  weaknesses     String[]
+  summary        String   @db.Text
+  recommendation String?  @db.Text
+
+  interviewId String    @unique
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InterviewConfig {
+  id              String        @id @default(cuid())
+  questionCount   Int
+  interviewMode   InterviewMode
+  durationMinutes Int
+  prompt          String?       @db.Text
+
+  jobId String @unique
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Question {
+  id                 String     @id @default(cuid())
+  questionText       String
+  difficulty         Difficulty
+  timeLimitSeconds   Int        @default(60)
+  userAnswer         String?    @db.Text
+  aiFeedback         String?    @db.Text
+  questionScore      Int        @default(0)
+  confidenceScore    Int        @default(0)
+  communicationScore Int        @default(0)
+  correctnessScore   Int        @default(0)
+  durationSeconds    Int?
+  category           String?
+  displayOrder       Int
+
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([interviewId, displayOrder])
+  @@index([interviewId])
+}
+
+model Invitation {
+  id         String           @id @default(cuid())
+  token      String           @unique
+  expiresAt  DateTime
+  status     InvitationStatus @default(PENDING)
+  acceptedAt DateTime?
+
+  candidateId String?
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  candidateEmail String
+  candidateName  String?
+
+  jobId       String
+  job         Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  interviewId String?
+  interview   Interview? @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateEmail])
+  @@index([candidateId])
+  @@index([jobId])
+  @@index([status])
+}
+
+model Resume {
+  id       String @id @default(cuid())
+  fileName String
+  fileUrl  String
+  analysis Json?
+
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  interviews Interview[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([createdAt])
 }
 
 enum Difficulty {
@@ -52,22 +238,34 @@ enum Difficulty {
   HARD
 }
 
-model Question {
-  id                 String     @id @default(cuid())
-  questionText       String
-  difficulty         Difficulty
-  timeLimitSeconds   Int        @default(60)
-  userAnswer         String?
-  aiFeedback         String?
-  questionScore      Int        @default(0)
-  confidenceScore    Int        @default(0)
-  communicationScore Int        @default(0)
-  correctnessScore   Int        @default(0)
-  category           String?
+enum InterviewMode {
+  TECHNICAL
+  HR
+}
 
-  interviewId String
-  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+enum InterviewType {
+  PRACTICE
+  COMPANY
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum InterviewStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum JobStatus {
+  OPEN
+  PAUSED
+  CLOSED
+  DRAFT
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
 }
