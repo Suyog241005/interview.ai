@@ -11,7 +11,7 @@
   "type": "module",
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",
-    "@inteview.ai/api": "workspace:*",
+    "@interview.ai/api": "workspace:*",
     "@interview.ai/types": "workspace:*"
   }
 }

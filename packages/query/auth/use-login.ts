@@ -1,5 +1,5 @@
 import type { AuthRequest } from "@interview.ai/types";
-import { api } from "@inteview.ai/api";
+import { api } from "@interview.ai/api";
 import { useMutation } from "@tanstack/react-query";
 
 export const useLogin = () => {

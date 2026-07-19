@@ -22,9 +22,13 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.81",
+    "@interview.ai/api": "workspace:*",
+    "@interview.ai/better-auth": "workspace:*",
     "@interview.ai/db": "workspace:*",
     "@interview.ai/types": "workspace:*",
+    "@trpc/server": "^11.18.0",
     "ai": "^6.0.202",
+    "better-auth": "^1.6.23",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",
