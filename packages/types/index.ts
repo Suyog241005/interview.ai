@@ -1,44 +1,27 @@
 import {
-  AuthSchema,
-  type AuthRequest,
-  type AuthResponse,
-  type LogoutResponse,
-} from "./auth/types";
+  CreatePracticeInterviewQuestionsSchema,
+  type CreatePracticeInterviewQuestions,
+} from "./ai/index.ts";
 import {
-  InterviewQuestionsSchema,
-  AnswerEvaluationSchema,
-  type AnswerEvaluation,
-  type InterviewQuestions,
-} from "./ai/types.ts";
-import {
-  CreateInterviewSchema,
-  type CreateInterviewRequest,
-  type CreateInterviewResponse,
-  type InterviewWithQuestion,
-} from "./interview/types.ts";
-import { type ResumeAnalysis, ResumeAnalysisSchema } from "./resume/types.ts";
-import { type Interview, type Question } from "./db/types";
-import { type GetUserResponse } from "./user/types";
+  CreatePracticeInterviewSchema,
+  StartPracticeInterviewSchema,
+  type CreatePracticeInterviewRequest,
+  type CreatePracticeInterviewResponse,
+} from "./interview/index.ts";
+import { type ResumeAnalysis, ResumeAnalysisSchema } from "./resume/index.ts";
+import { type GetUserResponse } from "./user/index.ts";
 
 export type {
-  AuthRequest,
-  AuthResponse,
-  LogoutResponse,
-  CreateInterviewRequest,
-  CreateInterviewResponse,
+  CreatePracticeInterviewRequest,
+  CreatePracticeInterviewResponse,
   ResumeAnalysis,
-  InterviewWithQuestion,
-  Question,
-  Interview,
-  AnswerEvaluation,
-  InterviewQuestions,
-  GetUserResponse
+  CreatePracticeInterviewQuestions,
+  GetUserResponse,
 };
 
 export {
-  AuthSchema,
-  CreateInterviewSchema,
+  CreatePracticeInterviewSchema,
   ResumeAnalysisSchema,
-  InterviewQuestionsSchema,
-  AnswerEvaluationSchema,
+  CreatePracticeInterviewQuestionsSchema,
+  StartPracticeInterviewSchema,
 };
