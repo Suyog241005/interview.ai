@@ -1,14 +1,10 @@
 import { router } from "../../trpc";
-import { createCompany } from "./create";
-import { getCompany } from "./get";
-import { updateCompany } from "./update";
-import { deleteCompany } from "./delete";
+import { companyProcedures } from "./company";
 import { inviteRecruiter } from "./invite-recruiter";
+import { jobProcedures } from "./job";
 
 export const companyRouter = router({
-  createCompany,
-  getCompany,
-  updateCompany,
-  deleteCompany,
+  ...companyProcedures,
+  ...jobProcedures,
   inviteRecruiter,
 });
