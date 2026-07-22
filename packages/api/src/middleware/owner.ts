@@ -4,27 +4,23 @@ import { TRPCError } from "@trpc/server";
 
 export const protectedCompanyOwnerProcedure = protectedProcedure.use(
   async ({ next, ctx }) => {
-    const companyOwner = await prisma.user.findUniqueOrThrow({
+    const company = await prisma.company.findUnique({
       where: {
-        id: ctx.userId,
-      },
-      include: {
-        ownedCompany: true,
+        ownerId: ctx.userId,
       },
     });
 
-    if (!companyOwner.ownedCompany) {
+    if (!company) {
       throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "You are not owner of any company",
+        code: "FORBIDDEN",
+        message: "You are not the owner of any company",
       });
     }
 
     return next({
       ctx: {
         ...ctx,
-        ownerId: companyOwner.id,
-        companyId: companyOwner.ownedCompany.id,
+        companyId: company.id,
       },
     });
   },

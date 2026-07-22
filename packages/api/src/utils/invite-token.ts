@@ -1,7 +1,7 @@
 import { getRandomValues } from "crypto";
 
-export function generateInviteCode(length = 6): string {
-  const chars = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ";
+export function generateInviteCode(length = 12): string {
+  const chars = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
   const byteArray = new Uint8Array(length);
   getRandomValues(byteArray);
 
