@@ -13,7 +13,6 @@ import {
   type GenerateAiResultForPracticeInterview,
 } from "@interview.ai/types/ai";
 
-// // Service function to analyze PDF resume and return structured data
 export const analyzeResume = async (
   fileBuffer: Buffer,
 ): Promise<ResumeAnalysis> => {
@@ -50,7 +49,6 @@ export const analyzeResume = async (
   }
 };
 
-// Service function to generate interview questions based on resume and job role
 export const generatePracticeInterviewQuestions = async ({
   resumeAnalysis,
   role,
@@ -202,67 +200,42 @@ export const generatePracticeInterviewReport = async (
   }
 };
 
-// export const evaluateAnswer = async (
-//   question: Question[],
-// ): Promise<AnswerEvaluation> => {
-//   try {
-//     //Generate a prompt for evaluating the answers
-//     //     type Question = {
-//     //     id: string;
-//     //     category: string | null;
-//     //     difficulty: Difficulty;
-//     //     questionText: string;
-//     //     timeLimitSeconds: number;
-//     //     userAnswer: string | null;
-//     //     aiFeedback: string | null;
-//     //     questionScore: number;
-//     //     confidenceScore: number;
-//     //     communicationScore: number;
-//     //     correctnessScore: number;
-//     //     interviewId: string;
-//     //     createdAt: Date;
-//     //     updatedAt: Date;
-//     // }
-//     const prompt = `
-// You are an expert technical and HR interviewer. Your task is to evaluate the candidate's answers to the following questions.
-// For each question, compare the candidate's answer ('userAnswer') against the question text ('questionText').
+export const generateCompanyInterviewQuestions = async ({
+  jobTitle,
+  jobDescription,
+  experienceYears,
+  interviewMode,
+  questionCount = 5,
+  promptText,
+}: {
+  jobTitle: string;
+  jobDescription: string;
+  experienceYears: number;
+  interviewMode: InterviewMode;
+  questionCount?: number;
+  promptText?: string | null;
+}): Promise<CreatePracticeInterviewQuestions> => {
+  try {
+    const prompt = `You are an expert recruiter generating interview questions for a hiring process.
+Job Title: ${jobTitle}
+Job Description: ${jobDescription}
+Required Experience Years: ${experienceYears}
+Interview Track: ${interviewMode}
+Custom Prompt / Instructions: ${promptText || "None"}
 
-// Evaluate each answer based on:
-// 1. Correctness: How technically or logically accurate is the answer relative to the question? (Score 0-10)
-// 2. Communication: How clear, structured, and easy to understand is the explanation? (Score 0-10)
-// 3. Confidence: How confident does the candidate sound in their answer? (Score 0-10)
-// 4. Overall Question Score: An average/weighted representation of the answer's quality. (Score 0-10)
-// 5. AI Feedback: Provide concise, constructive feedback pointing out strengths and specific areas for improvement, keep the feedback under 15 words strictly. Do not repeat the answer; focus purely on constructive feedback.
+Generate exactly ${questionCount} sequential interview questions conforming strictly to the JSON schema.
+Each question text should be under 25 words to allow natural verbal flow.`;
 
-// Here are the questions and the candidate's responses:
-// ${question
-//   .map(
-//     (q, i) => `
-//     QuestionId : ${q.id}
-//       Question ${i + 1}:
-//       Category: ${q.category || "General"}
-//       Difficulty: ${q.difficulty}
-//       Question Text: ${q.questionText}
-//       Candidate Answer: ${q.userAnswer || "No answer provided."}
-// `,
-//   )
-//   .join("\n")}
+    const { text } = await generateText({
+      model: google("gemini-2.5-flash"),
+      output: Output.object({ schema: CreatePracticeInterviewQuestionsSchema }),
+      prompt,
+    });
 
-// Return a JSON array where each item corresponds to the evaluation of the respective question in the same order as provided above.
-// `;
-
-//     const { text } = await generateText({
-//       model: google("gemini-2.5-flash"),
-//       output: Output.object({ schema: AnswerEvaluationSchema }),
-//       prompt,
-//     });
-
-//     const data = JSON.parse(text);
-//     const response: AnswerEvaluation = AnswerEvaluationSchema.parse(data);
-
-//     return response;
-//   } catch (error) {
-//     console.error("Error evaluating answer in AI service:", error);
-//     throw error;
-//   }
-// };
+    const data = JSON.parse(text);
+    return CreatePracticeInterviewQuestionsSchema.parse(data);
+  } catch (error) {
+    console.error("Error generating company interview questions:", error);
+    throw error;
+  }
+};

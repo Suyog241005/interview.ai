@@ -21,3 +21,11 @@ export const GetCompanySchema = z.object({
   companyId: z.string(),
 });
 export type GetCompanyRequest = z.infer<typeof GetCompanySchema>;
+
+export const InviteCandidateSchema = z.object({
+  candidateEmail: z.string().email(),
+  candidateName: z.string().optional(),
+  jobId: z.string(),
+  interviewId: z.string().optional(),
+});
+export type InviteCandidateRequest = z.infer<typeof InviteCandidateSchema>;
