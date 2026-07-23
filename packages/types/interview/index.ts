@@ -6,9 +6,13 @@ import {
 } from "../db";
 import { ResumeAnalysisSchema } from "../resume";
 
+const interviewModeValues = Object.values(InterviewMode) as [
+  InterviewMode,
+  ...InterviewMode[],
+];
 export const CreatePracticeInterviewSchema = z.object({
   role: z.string(),
-  interviewMode: z.enum(InterviewMode),
+  interviewMode: z.enum(interviewModeValues),
   experienceYears: z.number(),
   resumeId: z.string().optional(),
 });
@@ -59,3 +63,26 @@ export type GeneratePracticeInterviewReportRequest = z.infer<
 >;
 export type GeneratePracticeInterviewReportResponse = PracticeInterview;
 
+export const CreateCompanyInterview = z.object({
+  startedAt: z.date().optional(),
+  completedAt: z.date().optional(),
+  candidateId: z.string(),
+  jobId: z.string(),
+});
+export type CreateCompanyInterviewRequest = z.infer<
+  typeof CreateCompanyInterview
+>;
+
+export const UpdateCompanyInterview = CreateCompanyInterview.partial().extend({
+  interviewId: z.string(),
+});
+export type UpdateCompanyInterviewRequest = z.infer<
+  typeof UpdateCompanyInterview
+>;
+
+export const GetCompanyInterviewById = z.object({
+  interviewId: z.string(),
+});
+export type GetCompanyInterviewByIdRequest = z.infer<
+  typeof GetCompanyInterviewById
+>;
