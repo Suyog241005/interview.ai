@@ -51,7 +51,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 
 // tRPC API
 app.use(
-  "/api/v1/trpc",
+  "/trpc",
   createExpressMiddleware({
     router: appRouter,
     createContext: createTRPCContext,

@@ -22,16 +22,10 @@ import {
   SelectValue,
 } from "@interview.ai/ui/select";
 import { Button } from "@interview.ai/ui/button";
-import type {
-  InterviewWithQuestion,
-  ResumeAnalysis,
-} from "@interview.ai/types";
 import { useState } from "react";
-import {
-  useAnalyzeResume,
-  useCreateInterview,
-  useCreateInterviewQuestions,
-} from "@interview.ai/query";
+import type { PracticeInterviewWithQuestion } from "@interview.ai/api/client";
+import type { ResumeAnalysis } from "@interview.ai/types";
+import { trpc } from "@interview.ai/api/client";
 
 const formSchema = z.object({
   role: z.string().min(3, "Job title must be at least 3 characters"),
@@ -57,16 +51,19 @@ export type FormType = z.infer<typeof formSchema>;
 export const Step1Setup = ({
   onStart,
 }: {
-  onStart: (data: InterviewWithQuestion) => void;
+  onStart: (data: PracticeInterviewWithQuestion) => void;
 }) => {
   const [resumeFileField, setResumeFileField] = useState<File | null>(null);
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(
     null,
   );
-  const { mutateAsync: createInterviewMutation } = useCreateInterview();
-  const { mutateAsync: createInterviewQuestionsMutation } =
-    useCreateInterviewQuestions();
-  const { mutateAsync: analyzeResumeMutation } = useAnalyzeResume();
+
+  const createInterviewMutation =
+    trpc.practice.createPracticeInterview.useMutation();
+  const createQuestionsMutation =
+    trpc.practice.createPracticeInterviewQuestions.useMutation();
+  const createResumeMutation = trpc.resume.createResume.useMutation();
+  const analyzeResumeMutation = trpc.resume.analyzeResume.useMutation();
 
   const form = useForm<FormType>({
     resolver: zodResolver(formSchema),
@@ -80,43 +77,39 @@ export const Step1Setup = ({
 
   const onSubmit = async (values: FormType) => {
     try {
-      await createInterviewMutation(
-        {
-          interviewMode: values.interviewMode,
+      const expYears = parseInt(values.experience, 10) || 0;
+
+      // 1. Create Practice Interview
+      const interviewResult = await createInterviewMutation.mutateAsync({
+        role: values.role,
+        interviewMode: values.interviewMode,
+        experienceYears: expYears,
+      });
+
+      if (!interviewResult.practiceInterview) {
+        alert("Failed to create interview session");
+        return;
+      }
+
+      // 2. Generate Practice Questions with AI
+      const questionsResult = await createQuestionsMutation.mutateAsync({
+        practiceinterviewId: interviewResult.practiceInterview.id,
+        resumeAnalysis,
+        values: {
           role: values.role,
-          experience: values.experience,
+          interviewMode: values.interviewMode,
+          experienceYears: expYears,
         },
-        {
-          onSuccess: async ({ data: newInterview }) => {
-            try {
-              await createInterviewQuestionsMutation(
-                {
-                  interviewId: newInterview.id,
-                  resumeAnalysis,
-                  values,
-                },
-                {
-                  onSuccess: ({ data }) => {
-                    onStart(data);
-                  },
-                  onError: (err) => {
-                    console.log(err);
-                    alert(`Something went wrong ${err.message}`);
-                  },
-                },
-              );
-            } catch (error) {
-              console.log(error);
-            }
-          },
-          onError: (err) => {
-            console.log(err);
-            alert(`Something went wrong ${err.message}`);
-          },
-        },
+      });
+
+      if (questionsResult.practiceInterviewWithQuestions) {
+        onStart(questionsResult.practiceInterviewWithQuestions);
+      }
+    } catch (error: any) {
+      console.error(error);
+      alert(
+        `Something went wrong: ${error.message || "Failed to start interview"}`,
       );
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -324,26 +317,39 @@ export const Step1Setup = ({
                             value={""}
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
-                              if (file) {
-                                field.onChange(file);
+                              if (!file) return;
+                              field.onChange(file);
+                              setResumeFileField(file);
+                              try {
+                                // 1. Save Resume Record in DB
+                                const { resume } =
+                                  await createResumeMutation.mutateAsync({
+                                    name: file.name,
+                                    resumeUrl: file.name,
+                                  });
+                                // 2. Trigger AI Resume Analysis
+                                const { resumeAnalysis } =
+                                  await analyzeResumeMutation.mutateAsync({
+                                    resumeId: resume.id,
+                                  });
+                                // 3. Auto-fill form fields with AI suggestions
+                                if (resumeAnalysis) {
+                                  const suggestedRole =
+                                    resumeAnalysis.suggestedRoles?.[0] || "";
+                                  const expYears = String(
+                                    resumeAnalysis.experienceyears || "",
+                                  );
+                                  form.setValue("role", suggestedRole, {
+                                    shouldDirty: true,
+                                  });
+                                  form.setValue("experience", expYears, {
+                                    shouldDirty: true,
+                                  });
+                                  setResumeAnalysis(resumeAnalysis as any);
+                                }
+                              } catch (error) {
+                                console.error("Resume analysis error:", error);
                               }
-                              const formData = new FormData();
-                              formData.append("resume", file!);
-                              setResumeFileField(file!);
-                              await analyzeResumeMutation(formData, {
-                                onSuccess: ({ data }) => {
-                                  console.log(data);
-                                  const role = data.suggestedRoles[0];
-                                  const experience = data.experience;
-                                  form.setValue("role", role, {
-                                    shouldDirty: true,
-                                  });
-                                  form.setValue("experience", experience, {
-                                    shouldDirty: true,
-                                  });
-                                  setResumeAnalysis(data);
-                                },
-                              });
                             }}
                           />
                         </div>
