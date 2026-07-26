@@ -1,7 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import { prisma } from "@interview.ai/db"; // Import your shared prisma client
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import { auth } from "@interview.ai/better-auth/server";
+import { fromNodeHeaders } from "better-auth/node";
 
 // 1. Create the context builder
 export async function createTRPCContext({
@@ -9,7 +9,7 @@ export async function createTRPCContext({
   res,
 }: CreateExpressContextOptions) {
   const session = await auth.api.getSession({
-    headers: req.headers,
+    headers: fromNodeHeaders(req.headers),
   });
 
   return {
