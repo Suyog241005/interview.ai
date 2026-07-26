@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useGetInterviewHistory } from "@interview.ai/query";
 import { Navbar } from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
 import { motion, AnimatePresence } from "motion/react";
@@ -17,10 +16,16 @@ import {
 import { Button } from "@interview.ai/ui/button";
 import { Card, CardContent } from "@interview.ai/ui/card";
 import { useNavigate } from "react-router";
+import { trpc } from "@interview.ai/api/client";
 
 export default function InterviewHistoryPage() {
   const navigate = useNavigate();
-  const { data, isLoading, isError } = useGetInterviewHistory();
+
+  const { data, isLoading, isError } =
+    trpc.practice.getPracticeInterviewHistory.useQuery();
+
+  const history = data?.history ?? [];
+
   const [expandedInterviewId, setExpandedInterviewId] = useState<string | null>(
     null,
   );
@@ -113,7 +118,7 @@ export default function InterviewHistoryPage() {
           </Card>
         )}
 
-        {!isLoading && !isError && (!data || data.length === 0) && (
+        {!isLoading && !isError && (!history || history.length === 0) && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -138,14 +143,14 @@ export default function InterviewHistoryPage() {
           </motion.div>
         )}
 
-        {!isLoading && !isError && data && data.length > 0 && (
+        {!isLoading && !isError && history.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="show"
             className="space-y-4"
           >
-            {data.map((interview) => {
+            {history.map((interview) => {
               const isExpanded = expandedInterviewId === interview.id;
               const formattedDate = new Date(
                 interview.createdAt,
@@ -193,7 +198,7 @@ export default function InterviewHistoryPage() {
                         {interview.role}
                       </h2>
                       <p className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded w-fit">
-                        {interview.experience} Experience
+                        {interview.experienceYears} Experience
                       </p>
                     </div>
 

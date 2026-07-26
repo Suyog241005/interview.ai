@@ -32,6 +32,10 @@ type CompanyInterviewWithQuestion = CompanyInterview & {
   questions: CompanyQuestion[];
 };
 
+type UserWithCandidate = User & {
+  candidate: Candidate;
+};
+
 export type {
   User,
   Candidate,
@@ -50,6 +54,7 @@ export type {
   PracticeInterviewReport,
   PracticeInterviewWithQuestion,
   CompanyInterviewWithQuestion,
+  UserWithCandidate
 };
 
 export {

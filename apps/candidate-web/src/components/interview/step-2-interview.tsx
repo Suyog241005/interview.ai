@@ -1,7 +1,3 @@
-import {
-  type Interview,
-  type InterviewWithQuestion,
-} from "@interview.ai/types";
 import { useEffect, useRef, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import femaleVideo from "@/assets/Videos/female-ai.mp4";
@@ -15,11 +11,10 @@ import {
   ShieldAlertIcon,
 } from "lucide-react";
 import {
-  useGetInterview,
-  useGenerateReport,
-  useStartInterview,
-  useSubmitAnswer,
-} from "@interview.ai/query";
+  trpc,
+  type PracticeInterviewWithQuestion,
+} from "@interview.ai/api/client";
+import type { PracticeInterview } from "@interview.ai/api/client";
 
 declare global {
   interface Window {
@@ -32,8 +27,8 @@ export const Step2Interview = ({
   interviewData,
   onComplete,
 }: {
-  interviewData: InterviewWithQuestion;
-  onComplete: (report: InterviewWithQuestion) => void;
+  interviewData: PracticeInterviewWithQuestion;
+  onComplete: (report: PracticeInterviewWithQuestion) => void;
 }) => {
   const { id, questions } = interviewData;
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -41,17 +36,26 @@ export const Step2Interview = ({
     questions[currentQIndex].timeLimitSeconds,
   );
   const [interviewStarted, setInterviewStarted] = useState(false);
-  const [interview, setInterview] = useState<Interview | null>(null);
+  const [interview, setInterview] = useState<PracticeInterview | null>(null);
   const recognitionRef = useRef<any>(null);
 
   const transcriptRef = useRef("");
 
   const [liveTranscript, setLiveTranscript] = useState("");
 
-  const { mutateAsync: submitAnswerMutation } = useSubmitAnswer();
-  const { mutateAsync: startInterviewMutation } = useStartInterview();
-  const { mutateAsync: generateReportMutation } = useGenerateReport();
-  const { data: fetchedInterviewData } = useGetInterview({ interviewId: id });
+  // 1. tRPC Queries & Mutations
+  const { data: fetchedInterviewData } =
+    trpc.practice.getPracticeInterview.useQuery({ id });
+  const startInterviewMutation =
+    trpc.practice.startPracticeInterview.useMutation();
+  const submitAnswerMutation = trpc.practice.submitAnswer.useMutation();
+  const generateReportMutation =
+    trpc.practice.generatePracticeInterviewReport.useMutation();
+  useEffect(() => {
+    if (fetchedInterviewData?.practiceInterview) {
+      setInterview(fetchedInterviewData.practiceInterview);
+    }
+  }, [fetchedInterviewData]);
 
   const startRecognition = () => {
     const SpeechRecognition =
@@ -108,22 +112,18 @@ export const Step2Interview = ({
 
     return transcriptRef.current;
   };
-
   const submitAnswer = async ({
     transcript,
     questionId,
-    timeTaken,
   }: {
     transcript: string;
     questionId: string;
-    timeTaken: number;
   }) => {
     try {
-      await submitAnswerMutation({
+      await submitAnswerMutation.mutateAsync({
         interviewId: id,
         questionId,
-        answer: transcript,
-        timeTaken,
+        userAnswer: transcript,
       });
     } catch (error) {
       console.error("Failed to submit answer:", error);
@@ -132,30 +132,26 @@ export const Step2Interview = ({
 
   const handleNextQuestion = async () => {
     try {
-      console.log("Timer completed");
       const question = questions[currentQIndex];
-
       const transcript = stopRecognition();
-      console.log("Transcript:", transcript);
 
       await submitAnswer({
         transcript,
         questionId: question.id,
-        timeTaken: question.timeLimitSeconds - timeLeft,
       });
-
-      console.log("Answer submitted");
 
       if (currentQIndex < questions.length - 1) {
         const nextIndex = currentQIndex + 1;
-
         setCurrentQIndex(nextIndex);
-        console.log("Moving to question", nextIndex);
         setTimeLeft(questions[nextIndex].timeLimitSeconds);
       } else {
-        const report = await generateReportMutation({ interviewId: id });
-        if (report) {
-          onComplete(report.data);
+        // Generate AI evaluation report when all questions completed
+        const result = await generateReportMutation.mutateAsync({
+          practiceinterviewId: id,
+        });
+
+        if (result?.practiceInterview) {
+          onComplete(result.practiceInterview as any);
         }
       }
     } catch (error) {
@@ -166,7 +162,7 @@ export const Step2Interview = ({
   useEffect(() => {
     console.log(fetchedInterviewData);
     if (fetchedInterviewData) {
-      setInterview(fetchedInterviewData.data);
+      setInterview(fetchedInterviewData.practiceInterview);
     }
   }, [fetchedInterviewData]);
 
@@ -372,28 +368,18 @@ export const Step2Interview = ({
                 onClick={async () => {
                   try {
                     setInterviewStarted(true);
-                    await startInterviewMutation(
-                      {
-                        interviewId: id,
-                      },
-                      {
-                        onSuccess: async () => {
-                          // Handled automatically by the speak callback in useEffect
-                        },
-                        onError: (err) => {
-                          setInterviewStarted(false);
-                          console.error(err);
-                          alert("Failed to start interview");
-                        },
-                      },
-                    );
+                    await startInterviewMutation.mutateAsync({
+                      practiceinterviewId: id,
+                    });
                   } catch (error) {
                     setInterviewStarted(false);
+                    console.error("Failed to start interview:", error);
+                    alert("Failed to start interview");
                   }
                 }}
                 className="w-full sm:w-auto px-4 py-6 rounded-xl bg-gray-800 text-white font-bold shadow-lg gap-2 text-base cursor-pointer"
               >
-                <PlayIcon className="h-5 w-5 fill-white " />
+                <PlayIcon className="h-5 w-5 fill-white" />
                 Start My AI Interview
               </Button>
             </div>

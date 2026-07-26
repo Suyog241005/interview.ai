@@ -1,4 +1,3 @@
-import type { InterviewWithQuestion, Question } from "@interview.ai/types";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -13,12 +12,14 @@ import {
 } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
 import { useNavigate } from "react-router";
+import type { PracticeInterviewWithQuestion } from "@interview.ai/api/client";
+import type { PracticeQuestion } from "@interview.ai/types/db";
 
 export const Step3Report = ({
   report,
   onRetake,
 }: {
-  report: InterviewWithQuestion;
+  report: PracticeInterviewWithQuestion;
   onRetake: () => void;
 }) => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export const Step3Report = ({
   };
 
   // Helper to calculate overall metric averages
-  const calculateAverage = (key: keyof Question) => {
+  const calculateAverage = (key: keyof PracticeQuestion) => {
     if (!report.questions.length) return 0;
     const sum = report.questions.reduce((acc, q) => {
       const val = q[key];
@@ -76,7 +77,8 @@ export const Step3Report = ({
               Interview Evaluation Report
             </h1>
             <p className="text-sm text-slate-400">
-              Review your customized metrics and detailed question-by-question AI analysis below.
+              Review your customized metrics and detailed question-by-question
+              AI analysis below.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -288,7 +290,10 @@ export const Step3Report = ({
                               Your Transcribed Answer
                             </h4>
                             <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed italic shadow-sm">
-                              "{q.userAnswer || "No answer was recorded for this question."}"
+                              "
+                              {q.userAnswer ||
+                                "No answer was recorded for this question."}
+                              "
                             </div>
                           </div>
 
@@ -304,7 +309,9 @@ export const Step3Report = ({
                               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                                 <div
                                   className="h-full bg-emerald-500 rounded-full"
-                                  style={{ width: `${q.correctnessScore * 10}%` }}
+                                  style={{
+                                    width: `${q.correctnessScore * 10}%`,
+                                  }}
                                 />
                               </div>
                             </div>
@@ -319,7 +326,9 @@ export const Step3Report = ({
                               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                                 <div
                                   className="h-full bg-blue-500 rounded-full"
-                                  style={{ width: `${q.confidenceScore * 10}%` }}
+                                  style={{
+                                    width: `${q.confidenceScore * 10}%`,
+                                  }}
                                 />
                               </div>
                             </div>
@@ -334,7 +343,9 @@ export const Step3Report = ({
                               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                                 <div
                                   className="h-full bg-purple-500 rounded-full"
-                                  style={{ width: `${q.communicationScore * 10}%` }}
+                                  style={{
+                                    width: `${q.communicationScore * 10}%`,
+                                  }}
                                 />
                               </div>
                             </div>
