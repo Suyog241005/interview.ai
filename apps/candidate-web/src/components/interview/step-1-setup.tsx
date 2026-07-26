@@ -2,6 +2,7 @@ import {
   BriefcaseBusinessIcon,
   ChartLineIcon,
   FileTextIcon,
+  Loader2Icon,
   MicIcon,
   User2Icon,
   XIcon,
@@ -25,6 +26,7 @@ import { Button } from "@interview.ai/ui/button";
 import { useState } from "react";
 import type { PracticeInterviewWithQuestion } from "@interview.ai/api/client";
 import type { ResumeAnalysis } from "@interview.ai/types";
+import { uploadToCloudinary } from "../../lib/cloudinary";
 import { trpc } from "@interview.ai/api/client";
 
 const formSchema = z.object({
@@ -57,6 +59,7 @@ export const Step1Setup = ({
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(
     null,
   );
+  const [isAnalyzingResume, setIsAnalyzingResume] = useState(false);
 
   const createInterviewMutation =
     trpc.practice.createPracticeInterview.useMutation();
@@ -274,7 +277,12 @@ export const Step1Setup = ({
                       {/* <FieldLabel htmlFor="setup-form-job-title">
                         Job Title
                       </FieldLabel> */}
-                      {resumeFileField ? (
+                      {isAnalyzingResume ? (
+                        <div className="flex items-center gap-2 p-3 bg-blue-50/50 border border-blue-100 rounded-xl text-blue-700 text-sm font-medium">
+                          <Loader2Icon className="animate-spin h-4 w-4 text-blue-600" />
+                          <span>Uploading resume & analyzing with AI...</span>
+                        </div>
+                      ) : resumeFileField ? (
                         <div className="flex items-center justify-between gap-3 bg-gray-50 border border-gray-200 text-gray-800 px-4 py-2.5 rounded-2xl w-full shadow-xs animate-in fade-in slide-in-from-top-1 duration-200">
                           <div className="flex items-center gap-2.5 min-w-0">
                             <FileTextIcon className="text-gray-600 shrink-0 h-5 w-5" />
@@ -320,19 +328,34 @@ export const Step1Setup = ({
                               if (!file) return;
                               field.onChange(file);
                               setResumeFileField(file);
+                              setIsAnalyzingResume(true);
                               try {
-                                // 1. Save Resume Record in DB
+                                // 1. Upload Resume File to Cloudinary
+                                let uploadedUrl = "";
+                                try {
+                                  uploadedUrl = await uploadToCloudinary(file);
+                                } catch (err: any) {
+                                  console.error("Cloudinary upload failed:", err);
+                                  alert(
+                                    err?.message ||
+                                      "Failed to upload resume to Cloudinary. Please ensure VITE_CLOUDINARY_CLOUD_NAME is properly set in apps/candidate-web/.env",
+                                  );
+                                  setIsAnalyzingResume(false);
+                                  return;
+                                }
+
+                                // 2. Save Resume Record in DB with Cloudinary URL
                                 const { resume } =
                                   await createResumeMutation.mutateAsync({
                                     name: file.name,
-                                    resumeUrl: file.name,
+                                    resumeUrl: uploadedUrl,
                                   });
-                                // 2. Trigger AI Resume Analysis
+                                // 3. Trigger AI Resume Analysis
                                 const { resumeAnalysis } =
                                   await analyzeResumeMutation.mutateAsync({
                                     resumeId: resume.id,
                                   });
-                                // 3. Auto-fill form fields with AI suggestions
+                                // 4. Auto-fill form fields with AI suggestions
                                 if (resumeAnalysis) {
                                   const suggestedRole =
                                     resumeAnalysis.suggestedRoles?.[0] || "";
@@ -349,6 +372,8 @@ export const Step1Setup = ({
                                 }
                               } catch (error) {
                                 console.error("Resume analysis error:", error);
+                              } finally {
+                                setIsAnalyzingResume(false);
                               }
                             }}
                           />
@@ -364,9 +389,10 @@ export const Step1Setup = ({
             </form>
             <Field orientation="horizontal">
               <Button
-                className="w-full bg-black text-white hover:bg-gray-800 gap-2 cursor-pointer"
+                className="w-full bg-black text-white hover:bg-gray-800 gap-2 cursor-pointer disabled:opacity-50"
                 type="submit"
                 form="setup-form"
+                disabled={isAnalyzingResume}
               >
                 <MicIcon />
                 Start Interview

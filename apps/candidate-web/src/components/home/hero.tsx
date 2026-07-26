@@ -3,10 +3,11 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router";
 import { Dialog, DialogContent, DialogTrigger } from "@interview.ai/ui/dialog";
 import { AuthDialog } from "../auth/auth-dialog";
-import { userAtom } from "@/jotai/atoms";
-import { useAtom } from "jotai";
+
+import { useSession } from "@interview.ai/better-auth/client";
 export const Hero = () => {
-  const [user] = useAtom(userAtom);
+  const { data: session } = useSession();
+  const user = session?.user;
   const navigate = useNavigate();
   return (
     <>

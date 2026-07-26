@@ -33,7 +33,26 @@ export const analyzeResume = protectedCandidateProcedure
       });
     }
 
-    const fileBuffer = fs.readFileSync(resume.fileUrl);
+    let fileBuffer: Buffer;
+    if (
+      resume.fileUrl.startsWith("http://") ||
+      resume.fileUrl.startsWith("https://")
+    ) {
+      const response = await fetch(resume.fileUrl);
+      if (!response.ok) {
+        console.error(
+          `Failed to fetch resume from URL [${resume.fileUrl}]. Status: ${response.status} ${response.statusText}`,
+        );
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Failed to download resume file from URL (Status ${response.status}): ${resume.fileUrl}`,
+        });
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      fileBuffer = Buffer.from(arrayBuffer);
+    } else {
+      fileBuffer = fs.readFileSync(resume.fileUrl);
+    }
 
     const aiResponse = await aiResumeAnalyzer(fileBuffer);
 
