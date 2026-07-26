@@ -1,5 +1,5 @@
 import z from "zod";
-import { Difficulty, type PracticeQuestion } from "../db";
+import { Difficulty } from "../db";
 // Zod Schema for structured interview questions
 export const CreatePracticeInterviewQuestionsSchema = z.object({
   questions: z
