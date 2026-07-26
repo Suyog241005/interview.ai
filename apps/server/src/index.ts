@@ -47,7 +47,7 @@ app.use(
 );
 
 // Better Auth routes
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 // tRPC API
 app.use(

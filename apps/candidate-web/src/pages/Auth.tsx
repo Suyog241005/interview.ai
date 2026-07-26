@@ -1,40 +1,26 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@interview.ai/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@interview.ai/ui/card";
 import { BrainCircuitIcon, SparklesIcon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "motion/react";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
-import { userAtom } from "@/jotai/atoms";
-import { useAtom } from "jotai";
-import { useLogin } from "@interview.ai/query";
+import { signIn } from "@interview.ai/better-auth/client";
 
 export default function AuthPage() {
-  const [_user, setUser] = useAtom(userAtom);
-  const { mutateAsync } = useLogin();
   const handleGoogleAuth = async () => {
     try {
-      const data = await signInWithPopup(auth, googleProvider);
-      if (data && data.user && data.user.displayName && data.user.email) {
-        await mutateAsync(
-          {
-            name: data.user.displayName,
-            email: data.user.email,
-            photoUrl: data.user.photoURL || "",
-          },
-          {
-            onSuccess: ({ data }) => {
-              setUser(data.user);
-            },
-            onError: (error) => {
-              alert(error.message);
-            },
-          },
-        );
-      }
+      await signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
     } catch (error) {
-      console.log(error);
+      console.error("Google authentication error:", error);
     }
   };
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-[#f3f3f3] px-6 py-20">
       <motion.div
@@ -55,7 +41,7 @@ export default function AuthPage() {
           <CardContent>
             <div className="text-2xl md:text-3xl font-semibold text-center leading-snug mb-4">
               Continue with{" "}
-              <span className=" bg-green-100 text-green-600 px-3 py-1 rounded-full inline-flex items-center gap-2">
+              <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full inline-flex items-center gap-2">
                 <SparklesIcon size={16} />
                 AI Smart Interview
               </span>
@@ -67,7 +53,7 @@ export default function AuthPage() {
             <motion.button
               whileHover={{ scale: 1.02, opacity: 0.9 }}
               whileTap={{ scale: 0.98, opacity: 1 }}
-              className="w-full rounded-full flex items-center justify-center gap-3 bg-black text-white py-3 shadow-md"
+              className="w-full rounded-full flex items-center justify-center gap-3 bg-black text-white py-3 shadow-md cursor-pointer"
               onClick={handleGoogleAuth}
             >
               <FcGoogle size={20} />

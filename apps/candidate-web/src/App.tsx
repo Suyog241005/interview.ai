@@ -1,30 +1,42 @@
-import { Navigate, Route, Routes } from "react-router";
-import HomePage from "./pages/Home";
-import AuthPage from "./pages/Auth";
 import { useEffect } from "react";
-import { useAtom } from "jotai";
-import { userAtom } from "./jotai/atoms";
-import InterviewPage from "./pages/Interview";
-import { useGetUser } from "@interview.ai/query";
+import { trpc } from "@interview.ai/api/client";
 import { Loader2Icon } from "lucide-react";
+import { Routes, Route, Navigate } from "react-router";
+import AuthPage from "./pages/Auth";
+import InterviewPage from "./pages/Interview";
 import InterviewHistoryPage from "./pages/InterviewHistory";
+import HomePage from "./pages/Home";
 
 function App() {
-  const [user, setUser] = useAtom(userAtom);
-  const { data, isLoading } = useGetUser();
+  const {
+    data: candidate,
+    isLoading,
+    error,
+    refetch,
+  } = trpc.candidate.getCandidate.useQuery(undefined, {
+    retry: false,
+  });
 
-  const currentUser = user || data?.user;
+  const becomeCandidate = trpc.candidateAuth.becomeCandidate.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   useEffect(() => {
-    if (data) {
-      setUser(data.user);
+    if (
+      error?.data?.code === "NOT_FOUND" &&
+      !becomeCandidate.isPending &&
+      !becomeCandidate.isSuccess
+    ) {
+      becomeCandidate.mutate();
     }
-  }, [data]);
+  }, [error]);
 
-  if (isLoading) {
+  if (isLoading || becomeCandidate.isPending) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2Icon className="animate-spin text-primary" size={32} />
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2Icon className="animate-spin text-gray-500" size={32} />
       </div>
     );
   }
@@ -34,15 +46,19 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route
         path="/auth"
-        element={currentUser ? <Navigate to={"/"} replace /> : <AuthPage />}
+        element={!candidate ? <AuthPage /> : <Navigate to="/" replace />}
       />
       <Route
         path="/interview"
-        element={currentUser ? <InterviewPage /> : <Navigate to={"/auth"} replace />}
+        element={
+          candidate ? <InterviewPage /> : <Navigate to="/auth" replace />
+        }
       />
       <Route
         path="/history"
-        element={currentUser ? <InterviewHistoryPage /> : <Navigate to={"/auth"} replace />}
+        element={
+          candidate ? <InterviewHistoryPage /> : <Navigate to="/auth" replace />
+        }
       />
     </Routes>
   );
