@@ -16,7 +16,7 @@ import { useSession } from "@interview.ai/better-auth/client";
 import { trpc } from "@interview.ai/api/client";
 
 export const Navbar = () => {
-  const { data: session } = useSession.get();
+  const { data: session, isPending } = useSession();
   const user = session?.user;
   const { data: candidate } = trpc.candidate.getCandidate.useQuery(undefined, {
     enabled: !!user,
@@ -67,7 +67,9 @@ export const Navbar = () => {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          {user ? (
+          {isPending ? (
+            <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse shrink-0" />
+          ) : user ? (
             <>
               <div className="flex items-center gap-2 pr-6 rounded-full cursor-pointer">
                 <DropdownMenu>
@@ -117,7 +119,7 @@ export const Navbar = () => {
           ) : (
             <Button
               onClick={() => navigate("/auth")}
-              className="px-4 py-2 rounded-lg bg-black text-white hover:opacity-90 text-sm font-medium"
+              className="px-4 py-2 rounded-lg bg-black text-white hover:opacity-90 text-sm font-medium cursor-pointer"
             >
               Login
             </Button>

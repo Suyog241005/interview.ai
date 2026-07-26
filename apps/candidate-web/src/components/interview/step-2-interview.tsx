@@ -95,7 +95,10 @@ export const Step2Interview = ({
     };
 
     recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event);
+      if (event.error === "no-speech" || event.error === "aborted") {
+        return;
+      }
+      console.warn("Speech recognition event:", event.error);
     };
 
     recognition.start();

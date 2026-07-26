@@ -181,7 +181,9 @@ export const generatePracticeInterviewReport = async (
 
     const { text } = await generateText({
       model: google("gemini-2.5-flash"),
-      output: Output.object({ schema: CreatePracticeInterviewQuestionsSchema }),
+      output: Output.object({
+        schema: GenerateAiResultForPracticeInterviewSchema,
+      }),
       prompt,
     });
 
