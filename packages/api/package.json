@@ -5,7 +5,8 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -16,12 +17,14 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.11",
+    "@interview.ai/better-auth": "workspace:*",
     "@interview.ai/db": "workspace:*",
     "@interview.ai/types": "workspace:*",
+    "@trpc/client": "^11.18.0",
+    "@trpc/react-query": "^11.18.0",
     "@trpc/server": "^11.18.0",
     "ai": "^7.0.19",
     "axios": "^1.18.1",
-    "zod": "^4.4.3",
-    "@interview.ai/better-auth": "workspace:*"
+    "zod": "^4.4.3"
   }
 }
