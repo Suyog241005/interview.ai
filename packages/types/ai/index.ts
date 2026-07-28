@@ -12,9 +12,6 @@ export const CreatePracticeInterviewQuestionsSchema = z.object({
           })
           .describe("Difficulty level of the question"),
         category: z.string().optional().describe("Category of the question"),
-        timeLimitSeconds: z
-          .number()
-          .describe("Time limit in seconds for the question"),
         displayOrder: z.number().describe("Order of the question"),
       }),
     )

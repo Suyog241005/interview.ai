@@ -14,6 +14,7 @@ import {
   generatePracticeInterviewReport,
 } from "../../services/ai.service";
 import { TRPCError } from "@trpc/server";
+import { Difficulty } from "@interview.ai/db/enums";
 
 export const practiceInterviewRouter = router({
   createPracticeInterview: protectedCandidateProcedure
@@ -84,12 +85,25 @@ export const practiceInterviewRouter = router({
 
       const { questions } = aiResult;
 
+      const getTimeLimit = (difficulty: Difficulty): number => {
+        switch (difficulty) {
+          case Difficulty.EASY:
+            return 60;
+          case Difficulty.MEDIUM:
+            return 90;
+          case Difficulty.HARD:
+            return 120;
+          default:
+            return 60;
+        }
+      };
+
       await prisma.practiceQuestion.createMany({
         data: questions.map((q) => ({
           questionText: q.questionText,
           difficulty: q.difficulty,
           category: q.category,
-          timeLimitSeconds: q.timeLimitSeconds,
+          timeLimitSeconds: getTimeLimit(q.difficulty),
           displayOrder: q.displayOrder,
           interviewId: practiceInterview.id,
         })),

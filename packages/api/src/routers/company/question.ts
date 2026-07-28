@@ -191,6 +191,19 @@ const generateAiQuestions = protectedRecruiterProcedure
 
     await prisma.companyQuestion.deleteMany({ where: { interviewId } });
 
+    const getTimeLimit = (difficulty: Difficulty): number => {
+      switch (difficulty) {
+        case Difficulty.EASY:
+          return 60;
+        case Difficulty.MEDIUM:
+          return 90;
+        case Difficulty.HARD:
+          return 120;
+        default:
+          return 60;
+      }
+    };
+
     const createdQuestions = await prisma.$transaction(
       generated.questions.map((q, idx) =>
         prisma.companyQuestion.create({
@@ -199,7 +212,7 @@ const generateAiQuestions = protectedRecruiterProcedure
             questionText: q.questionText,
             difficulty: q.difficulty as Difficulty,
             category: q.category,
-            timeLimitSeconds: q.timeLimitSeconds || 60,
+            timeLimitSeconds: getTimeLimit(q.difficulty),
             displayOrder: q.displayOrder || idx + 1,
           },
         }),
