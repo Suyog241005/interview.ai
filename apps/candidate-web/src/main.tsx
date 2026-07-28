@@ -6,6 +6,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { trpc, createTrpcClient } from "@interview.ai/api/client";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function getApiUrl(): string {
   const isProd = import.meta.env.PROD || import.meta.env.MODE === "production";
@@ -42,7 +43,9 @@ function Root() {
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <JotaiProvider>
-            <App />
+            <ThemeProvider defaultTheme="dark" storageKey="interview-ai-theme">
+              <App />
+            </ThemeProvider>
           </JotaiProvider>
         </QueryClientProvider>
       </trpc.Provider>

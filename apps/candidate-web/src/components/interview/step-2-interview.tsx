@@ -9,6 +9,7 @@ import {
   Mic2Icon,
   PlayIcon,
   ShieldAlertIcon,
+  Volume2Icon,
 } from "lucide-react";
 import {
   trpc,
@@ -43,7 +44,6 @@ export const Step2Interview = ({
 
   const [liveTranscript, setLiveTranscript] = useState("");
 
-  // 1. tRPC Queries & Mutations
   const { data: fetchedInterviewData } =
     trpc.practice.getPracticeInterview.useQuery({ id });
   const startInterviewMutation =
@@ -51,6 +51,7 @@ export const Step2Interview = ({
   const submitAnswerMutation = trpc.practice.submitAnswer.useMutation();
   const generateReportMutation =
     trpc.practice.generatePracticeInterviewReport.useMutation();
+
   useEffect(() => {
     if (fetchedInterviewData?.practiceInterview) {
       setInterview(fetchedInterviewData.practiceInterview);
@@ -115,6 +116,7 @@ export const Step2Interview = ({
 
     return transcriptRef.current;
   };
+
   const submitAnswer = async ({
     transcript,
     questionId,
@@ -148,7 +150,6 @@ export const Step2Interview = ({
         setCurrentQIndex(nextIndex);
         setTimeLeft(questions[nextIndex].timeLimitSeconds);
       } else {
-        // Generate AI evaluation report when all questions completed
         const result = await generateReportMutation.mutateAsync({
           practiceinterviewId: id,
         });
@@ -163,14 +164,10 @@ export const Step2Interview = ({
   };
 
   useEffect(() => {
-    console.log(fetchedInterviewData);
     if (fetchedInterviewData) {
       setInterview(fetchedInterviewData.practiceInterview);
     }
   }, [fetchedInterviewData]);
-
-  // Mount -> Load voice -> Intro Speak ->  Question Speak -> Mic On -> Timer running -> Submit -> Feedback Speak -> Next question
-  // -> Repeat until all questions are answered -> Show report
 
   useEffect(() => {
     if (interviewStarted) {
@@ -193,180 +190,209 @@ export const Step2Interview = ({
     };
   }, []);
 
-  //Mount -> Load voice -> Intro Speak ->  Question Speak -> Mic On -> Timer running -> Submit -> Feedback Speak -> Next question
-  // -> Repeat until all questions are answered -> Show report
-
   return (
-    <div className="min-h-screen bg-[#f3f3f3] flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-7xl min-h-[80vh] bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-200 flex flex-col lg:flex-row">
-        {/* video section */}
-        <div className="w-full lg:w-[35%] bg-white flex flex-col items-center p-6 space-y-6 border-r border-gray-200">
-          <div className="w-full max-w-xs rounded-2xl overflow-hidden shadow-xl">
-            <video
-              src={femaleVideo}
-              className="w-full h-auto object-cover"
-              autoPlay={interviewStarted}
-              muted
-            />
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-zinc-800 selection:text-white transition-colors">
+      <div className="w-full max-w-7xl min-h-[85vh] bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-xl flex flex-col lg:flex-row overflow-hidden relative">
+        {/* Vercel Mesh Gradient Top Hairline */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080] z-20" />
+
+        {/* Video / Controls Sidebar */}
+        <div className="w-full lg:w-[35%] bg-slate-100/70 dark:bg-zinc-900/60 p-6 flex flex-col items-center justify-between border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-zinc-800/80">
+          <div className="w-full flex flex-col items-center gap-6">
+            {/* Header Eyebrow */}
+            <div className="w-full flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+              <span className="text-[11px] font-mono tracking-tight text-[#007cf0] font-semibold">
+                cockpit // stream
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                online
+              </span>
+            </div>
+
+            {/* AI Video Feed */}
+            <div className="w-full max-w-xs bg-slate-900 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-md overflow-hidden shadow-xl relative group">
+              <video
+                src={femaleVideo}
+                className="w-full h-auto object-cover opacity-90"
+                autoPlay={interviewStarted}
+                muted
+              />
+              <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/80 border border-zinc-800 text-[10px] font-mono text-zinc-300 rounded-sm">
+                ai-interviewer // active
+              </div>
+            </div>
           </div>
 
-          {/* subtitle area */}
-
-          {/* timer area */}
+          {/* Timer / Live Controls */}
           {interviewStarted ? (
-            <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-md p-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500 ">Interview Status</span>
-                <span className="text-sm text-emerald-600 font-semibold">
-                  AI Speaking
+            <div className="w-full max-w-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-5 rounded-md mt-6 shadow-xs">
+              <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-zinc-800">
+                <span className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 uppercase">status</span>
+                <span className="text-xs font-mono text-[#007cf0] font-semibold flex items-center gap-1">
+                  <Volume2Icon size={12} className="animate-pulse" />
+                  audio active
                 </span>
               </div>
-              <div className="flex justify-center pt-6 border-t border-gray-200">
+
+              <div className="flex justify-center py-4">
                 <CountdownCircleTimer
                   key={currentQIndex}
                   isPlaying={interviewStarted}
                   duration={timeLeft}
-                  colors={["#2563eb", "#eab308", "#dc2626"]} // Tailwind colors: Blue -> Yellow -> Red
-                  colorsTime={[10, 3, 0]} // Transitions colors based on time remaining
-                  size={100}
-                  strokeWidth={8}
-                  trailColor="#e2e8f0" // Matches shadcn's muted/border slate tracks
+                  colors={["#007cf0", "#f5a623", "#ee0000"]}
+                  colorsTime={[10, 3, 0]}
+                  size={110}
+                  strokeWidth={6}
+                  trailColor="#e2e8f0"
                   onComplete={() => {
-                    // setTimeLeft(0);
                     handleNextQuestion();
                     return { shouldRepeat: false };
                   }}
                 >
-                  {({ remainingTime }) => remainingTime}
+                  {({ remainingTime }) => (
+                    <div className="text-center font-mono">
+                      <span className="text-2xl font-semibold text-slate-900 dark:text-white block tracking-tight font-sans">{remainingTime}</span>
+                      <span className="text-[9px] text-slate-500 dark:text-zinc-500 uppercase tracking-tight block">sec</span>
+                    </div>
+                  )}
                 </CountdownCircleTimer>
               </div>
-              <div className="grid grid-cols-2 gap-6 text-center mt-4 border-t border-gray-200 py-3">
-                <div className="flex flex-col items-center justify-center">
-                  <span className="text-lg font-semibold">
-                    {" "}
-                    {currentQIndex + 1}{" "}
-                  </span>
-                  <span className="text-xs"> Question</span>
+
+              <div className="grid grid-cols-2 gap-4 text-center mt-4 border-t border-slate-200 dark:border-zinc-800 pt-3 font-mono">
+                <div>
+                  <span className="text-lg font-semibold text-slate-900 dark:text-white block tracking-tight font-sans">{currentQIndex + 1}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-zinc-500 uppercase">question</span>
                 </div>
-                <div className="flex flex-col items-center justify-center">
-                  <span className="text-lg font-semibold">
-                    {" "}
-                    {questions.length}{" "}
-                  </span>
-                  <span className="text-xs"> Total Questions</span>
+                <div>
+                  <span className="text-lg font-semibold text-slate-900 dark:text-white block tracking-tight font-sans">{questions.length}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-zinc-500 uppercase">total</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex items-center gap-3">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                <Mic2Icon className="h-5 w-5 animate-pulse" />
+            <div className="w-full max-w-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-4 rounded-md flex items-center gap-3 mt-6 shadow-xs">
+              <div className="p-2 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white rounded-md">
+                <Mic2Icon className="h-4 w-4 text-[#007cf0] animate-pulse" />
               </div>
-              <div>
-                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Audio Check
+              <div className="font-mono">
+                <span className="block text-[10px] uppercase tracking-tight text-slate-500 dark:text-zinc-500">
+                  hardware status
                 </span>
-                <span className="text-sm font-semibold text-slate-700">
-                  Microphone connected
+                <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                  Microphone online
                 </span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Text Section */}
-
+        {/* Main Content Area */}
         {interviewStarted ? (
-          <div className=" flex-1 flex flex-col p-4 sm:p-6 md:p-8 relative">
-            <h2 className=" text-xl sm:text-2xl font-bold text-gray-700 mb-8">
-              AI Smart Interview
-            </h2>
-            <div className="relative mb-6 bg-gray-50 p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-sm">
-              <p className=" text-xs sm:text-sm text-gray-500">
-                Question {currentQIndex + 1} of {questions.length}
-              </p>
-              <div className="text-base sm:text-lg font-semibold text-gray-800 leading-relaxed">
-                {questions[currentQIndex].questionText}
+          <div className="flex-1 flex flex-col p-6 sm:p-10 justify-between bg-white dark:bg-zinc-950 relative">
+            <div>
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-4 mb-6">
+                <div>
+                  <span className="text-[10px] font-mono tracking-tight text-[#007cf0] uppercase font-semibold block">
+                    interview session // in-progress
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
+                    Question {currentQIndex + 1} of {questions.length}
+                  </h2>
+                </div>
+                <span className="px-3 py-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-mono text-slate-800 dark:text-zinc-300 rounded-full">
+                  {questions[currentQIndex].difficulty || "MEDIUM"}
+                </span>
               </div>
 
-              <p className="text-sm text-slate-700 min-h-[120px]">
-                {liveTranscript || "Listening..."}
-              </p>
+              {/* Question Text Box */}
+              <div className="bg-slate-50 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 p-6 rounded-lg mb-6 shadow-xs">
+                <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-zinc-500 block mb-2">prompt</span>
+                <h3 className="text-base sm:text-xl font-semibold text-slate-900 dark:text-white leading-relaxed font-sans tracking-tight">
+                  {questions[currentQIndex].questionText}
+                </h3>
+              </div>
+
+              {/* Transcript Display Box */}
+              <div className="bg-slate-50/50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 p-6 rounded-lg min-h-[140px]">
+                <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-zinc-500 block mb-2">live transcript // speech-recognition</span>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 font-mono leading-relaxed italic">
+                  {liveTranscript || "Listening for candidate response..."}
+                </p>
+              </div>
+            </div>
+
+            {/* Next Question CTA */}
+            <div className="pt-6 border-t border-slate-200 dark:border-zinc-800 flex justify-end mt-8">
+              <Button
+                onClick={handleNextQuestion}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-xs tracking-tight hover:bg-black dark:hover:bg-zinc-200 transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 font-sans"
+              >
+                <span>{currentQIndex < questions.length - 1 ? "Submit & Next Question →" : "Submit & Generate Report →"}</span>
+              </Button>
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col p-6 sm:p-8 md:p-10 justify-between bg-white">
+          <div className="flex-1 flex flex-col p-6 sm:p-10 justify-between bg-white dark:bg-zinc-950">
             <div className="space-y-8">
-              {/* Heading Container */}
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
-                  AI Smart Interview Lobby
+                <span className="text-[10px] font-mono tracking-tight text-[#007cf0] uppercase font-semibold block">
+                  lobby // ready-state
+                </span>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight font-sans mt-1">
+                  AI Smart Interview Lobby.
                 </h1>
-                <p className="text-sm text-slate-400 mt-2">
-                  Review your session rules below before initiating the AI
-                  assessment coordinator.
+                <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal mt-2 leading-relaxed">
+                  Review session parameters and operational rules before initiating the AI assessment coordinator.
                 </p>
               </div>
 
-              {/* Dynamic Information Grid Cards */}
+              {/* Dynamic Info Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
-                  <BriefcaseIcon className="h-5 w-5 text-slate-500 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/60 font-mono shadow-xs">
+                  <BriefcaseIcon className="h-5 w-5 text-slate-500 dark:text-zinc-400 mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="text-sm font-bold text-slate-700">
-                      Target Track Profile
+                    <h4 className="text-xs font-semibold text-slate-900 dark:text-white tracking-tight">
+                      Target track profile
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                      {interview?.role ? interview.role : "Full Stack"}
+                    <p className="text-xs text-slate-800 dark:text-zinc-300 mt-1 font-semibold font-sans">
+                      {interview?.role ? interview.role : "SOFTWARE ENGINEER"}
                     </p>
-                    <span className="inline-block px-2 py-0.5 text-[10px] font-bold bg-slate-200 rounded text-slate-700 mt-1.5">
-                      {interview?.interviewMode
-                        ? interview.interviewMode
-                        : "TECHNICAL"}
+                    <span className="inline-block px-2 py-0.5 text-[10px] font-mono bg-slate-200 dark:bg-zinc-800 text-slate-800 dark:text-zinc-300 mt-2 rounded-md">
+                      {interview?.interviewMode ? interview.interviewMode : "TECHNICAL"}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
-                  <HelpCircleIcon className="h-5 w-5 text-slate-500 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/60 font-mono shadow-xs">
+                  <HelpCircleIcon className="h-5 w-5 text-slate-500 dark:text-zinc-400 mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="text-sm font-bold text-slate-700">
-                      Interview Breakdown
+                    <h4 className="text-xs font-semibold text-slate-900 dark:text-white tracking-tight">
+                      Interview breakdown
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                      {questions.length} Questions
+                    <p className="text-xs text-slate-800 dark:text-zinc-300 mt-1 font-sans">
+                      {questions.length} Generated Questions
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Compliance / Instructions Section */}
-              <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-100 flex gap-3 text-amber-900">
-                <ShieldAlertIcon className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <h5 className="text-xs font-bold uppercase tracking-wider text-amber-800">
-                    Important Environment Rules
-                  </h5>
-                  <ul className="text-xs text-amber-700/90 list-disc pl-4 space-y-1 font-medium">
-                    <li>
-                      Ensure you are in a quiet room with stable browser
-                      microphonic access.
-                    </li>
-                    <li>
-                      Do not leave, minimize, or reload this application window
-                      tab once active.
-                    </li>
-                    <li>
-                      The automated scoring metrics initialize immediately upon
-                      pressing start.
-                    </li>
-                  </ul>
+              {/* Rules / Compliance */}
+              <div className="p-5 rounded-lg bg-amber-50/80 dark:bg-zinc-900/90 border border-amber-200 dark:border-zinc-800 font-mono space-y-2">
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-tight">
+                  <ShieldAlertIcon size={16} />
+                  <span>OPERATIONAL ENVIRONMENT RULES</span>
                 </div>
+                <ul className="text-xs text-amber-800/90 dark:text-zinc-400 list-disc pl-5 space-y-1 font-normal font-sans">
+                  <li>Ensure a quiet environment with browser microphone access granted.</li>
+                  <li>Do not reload or minimize the assessment window during active questions.</li>
+                  <li>Automated scoring starts immediately upon clicking start.</li>
+                </ul>
               </div>
             </div>
 
-            {/* Call to Action Trigger Button Block */}
-            <div className="pt-8 border-t border-slate-100 flex justify-end">
+            {/* Launch CTA */}
+            <div className="pt-6 border-t border-slate-200 dark:border-zinc-800 flex justify-end mt-8">
               <Button
                 onClick={async () => {
                   try {
@@ -380,10 +406,10 @@ export const Step2Interview = ({
                     alert("Failed to start interview");
                   }
                 }}
-                className="w-full sm:w-auto px-4 py-6 rounded-xl bg-gray-800 text-white font-bold shadow-lg gap-2 text-base cursor-pointer"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-xs tracking-tight hover:bg-black dark:hover:bg-zinc-200 transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2.5 font-sans"
               >
-                <PlayIcon className="h-5 w-5 fill-white" />
-                Start My AI Interview
+                <PlayIcon className="h-4 w-4 fill-current" />
+                <span>Start AI Interview Cockpit →</span>
               </Button>
             </div>
           </div>

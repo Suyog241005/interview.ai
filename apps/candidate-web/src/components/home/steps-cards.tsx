@@ -4,62 +4,75 @@ import { motion } from "motion/react";
 export const StepsCards = () => {
   const steps = [
     {
-      icon: <BsRobot size={24} />,
-      step: "STEP 1",
-      title: "Role & Experience Selection",
+      icon: <BsRobot size={18} className="text-slate-900 dark:text-white" />,
+      step: "01 // setup",
+      title: "Role & experience configuration",
       description:
-        "Select your target job role and years of experience - AI will customize the interview accordingly",
+        "Select your targeted job role, seniority level, and upload your resume to calibrate customized question prompts.",
     },
     {
-      icon: <BsMic size={24} />,
-      step: "STEP 2",
-      title: "Real-Time Voice Interview",
+      icon: <BsMic size={18} className="text-slate-900 dark:text-white" />,
+      step: "02 // assessment",
+      title: "Real-time voice interview",
       description:
-        "AI asks questions based on your selected role and listens to your answers in real-time",
+        "Engage with AI speech recognition to answer live technical, HR, and situational questions under realistic conditions.",
     },
     {
-      icon: <BsClock size={24} />,
-      step: "STEP 3",
-      title: "Timer Based Simulation",
+      icon: <BsClock size={18} className="text-slate-900 dark:text-white" />,
+      step: "03 // simulation",
+      title: "Timer-based score analysis",
       description:
-        "AI gives you time limits to answer each question to simulate real interview conditions",
+        "Receive precise difficulty-based timer constraints and instant comprehensive scoring metrics across key competencies.",
     },
   ];
 
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center gap-10 mb-28">
-      {steps.map((item, index) => {
-        return (
+    <div className="my-24">
+      <div className="text-center mb-12">
+        <span className="text-xs font-mono text-[#007cf0] uppercase tracking-tight block font-semibold mb-1">
+          workflow // engine
+        </span>
+        <h2 className="text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white tracking-[-1.28px] font-sans">
+          How the assessment works.
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {steps.map((item, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 60 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 + index * 0.2 }}
-            whileHover={{ rotate: 0, scale: 1.02 }}
-            className={`relative bg-white rounded-3xl border-2 p-10 w-80 max-w-[90%] shadow-md hover:shadow-2xl transition-all duration-300 
-                ${index === 0 ? "rotate-[-4deg] shadow-xl" : ""} 
-                ${index === 1 ? "rotate-[3deg] md:-mt-6 shadow-xl" : ""} 
-                ${index === 2 ? "rotate-[4deg] shadow-xl" : ""}`}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: index * 0.1 }}
+            className="group relative bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 p-7 rounded-lg shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-250 flex flex-col justify-between"
           >
-            <div className="space-y-2">
-              <div className="bg-gray-100 p-1 rounded-2xl w-fit">
-                {item.icon}
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <div className="p-2.5 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-md">
+                  {item.icon}
+                </div>
+                <span className="text-xs font-mono text-slate-400 dark:text-zinc-500">
                   {item.step}
-                </p>
-                <h3 className="text-lg font-bold text-gray-900 mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {item.description}
-                </p>
+                </span>
               </div>
+
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mb-2 font-sans">
+                {item.title}
+              </h3>
+
+              <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal leading-relaxed font-sans">
+                {item.description}
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-xs font-mono text-slate-400 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-300 transition-colors">
+              <span>step_0{index + 1}</span>
+              <span>Ready →</span>
             </div>
           </motion.div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 };

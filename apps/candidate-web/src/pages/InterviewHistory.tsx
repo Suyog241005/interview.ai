@@ -34,16 +34,16 @@ export default function InterviewHistoryPage() {
     setExpandedInterviewId(expandedInterviewId === id ? null : id);
   };
 
-  const getDifficultyColor = (diff: string) => {
+  const getDifficultyBadge = (diff: string) => {
     switch (diff.toUpperCase()) {
       case "EASY":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800";
       case "MEDIUM":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800";
       case "HARD":
-        return "bg-rose-50 text-rose-700 border-rose-200";
+        return "bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-slate-100 dark:bg-zinc-900 text-slate-800 dark:text-zinc-300 border-slate-200 dark:border-zinc-800";
     }
   };
 
@@ -58,61 +58,59 @@ export default function InterviewHistoryPage() {
   } as const;
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+    hidden: { opacity: 0, y: 16 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   } as const;
 
   return (
-    <div className="min-h-screen bg-[#f3f3f3] flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white flex flex-col font-sans selection:bg-zinc-800 selection:text-white transition-colors">
       <Navbar />
 
-      <main className="flex-1 px-4 py-16 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
+      <main className="flex-1 px-4 py-12 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
         {/* Header section */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-10 text-center sm:text-left"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/5 border border-slate-900/10 mb-3 text-xs font-semibold text-slate-800">
-            <BrainCircuitIcon className="h-3.5 w-3.5 text-slate-800" />
-            Performance Tracking
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 mb-3 text-[11px] font-mono tracking-tight uppercase text-[#007cf0] rounded-full">
+            <BrainCircuitIcon className="h-3.5 w-3.5 text-[#007cf0]" />
+            <span>performance // history</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
-            Interview History
+          <h1 className="text-3xl sm:text-4xl font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
+            Interview assessment history.
           </h1>
-          <p className="text-slate-500 mt-2">
-            Review your past mock assessments, AI feedback, and detailed
-            performance metrics.
+          <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal mt-2 font-sans">
+            Review past practice mock evaluations, voice performance metrics, and question-by-question AI feedback.
           </p>
         </motion.div>
 
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Loader2Icon className="animate-spin text-slate-900 h-10 w-10" />
-            <p className="text-sm font-semibold text-slate-500">
-              Loading your history...
+            <Loader2Icon className="animate-spin text-slate-900 dark:text-white h-8 w-8" />
+            <p className="text-xs font-mono tracking-tight text-slate-500 dark:text-zinc-500">
+              Retrieving assessment records...
             </p>
           </div>
         )}
 
         {isError && (
-          <Card className="bg-white p-8 border border-gray-200 rounded-3xl text-center shadow-sm max-w-lg mx-auto mt-10">
+          <Card className="bg-white dark:bg-zinc-950 p-8 border border-slate-200 dark:border-zinc-800 rounded-lg text-center shadow-xl max-w-lg mx-auto mt-10 text-slate-900 dark:text-white">
             <CardContent className="pt-6 space-y-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+              <div className="mx-auto w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400">
                 ⚠️
               </div>
-              <h3 className="text-lg font-bold text-gray-900">
-                Failed to load history
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
+                Failed to retrieve history.
               </h3>
-              <p className="text-sm text-gray-500">
-                There was a problem retrieving your past interviews. Please try
-                again.
+              <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal">
+                An issue occurred while fetching your candidate history records.
               </p>
               <Button
                 onClick={() => window.location.reload()}
-                className="mt-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl px-4 py-2 font-bold cursor-pointer"
+                className="mt-2 bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 rounded-full px-6 py-2 font-medium text-xs tracking-tight cursor-pointer"
               >
-                Retry
+                Retry Load
               </Button>
             </CardContent>
           </Card>
@@ -120,25 +118,27 @@ export default function InterviewHistoryPage() {
 
         {!isLoading && !isError && (!history || history.length === 0) && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white p-12 border border-gray-200 rounded-3xl text-center shadow-sm max-w-lg mx-auto mt-10"
+            className="bg-white dark:bg-zinc-950 p-12 border border-slate-200 dark:border-zinc-800 rounded-lg text-center shadow-xl max-w-lg mx-auto mt-10 relative overflow-hidden"
           >
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-slate-50 border border-gray-200 flex items-center justify-center text-slate-400 mb-6">
-              <BookOpenIcon className="h-8 w-8" />
+            {/* Vercel Mesh Gradient Top Hairline */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080]" />
+
+            <div className="mx-auto w-14 h-14 rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 mb-6">
+              <BookOpenIcon className="h-6 w-6 text-[#007cf0]" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">
-              No interviews recorded
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
+              No interview records found.
             </h3>
-            <p className="text-sm text-gray-500 mt-2 mb-6">
-              Start your first AI-powered interview practice session to track
-              your history and get detailed score evaluations.
+            <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal mt-2 mb-6 leading-relaxed font-sans">
+              Launch your first AI-powered interview practice session to build your historical evaluation dashboard.
             </p>
             <Button
               onClick={() => navigate("/interview")}
-              className="bg-gray-900 hover:bg-gray-800 text-white rounded-xl px-6 py-5 font-bold cursor-pointer inline-flex items-center gap-2 shadow-sm text-sm"
+              className="bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 rounded-full px-8 py-3.5 font-medium text-xs tracking-tight cursor-pointer inline-flex items-center gap-2 shadow-lg font-sans"
             >
-              Start Interview
+              Start Mock Interview →
             </Button>
           </motion.div>
         )}
@@ -175,51 +175,53 @@ export default function InterviewHistoryPage() {
                   key={interview.id}
                   variants={itemVariants}
                   layout
-                  className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                  className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg overflow-hidden shadow-xs hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-250 relative"
                 >
-                  {/* Card Header clickable area */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-slate-200 dark:bg-zinc-800" />
+
+                  {/* Card Header */}
                   <div
                     onClick={() => toggleExpand(interview.id)}
-                    className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none"
+                    className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none hover:bg-slate-50 dark:hover:bg-zinc-900/40 transition-colors"
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-1.5 font-mono">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-extrabold text-zinc-600 uppercase tracking-wider">
+                        <span className="text-[11px] font-semibold text-[#007cf0] uppercase tracking-tight">
                           {interview.interviewMode.replace("_", " ")}
                         </span>
-                        <span className="text-xs text-slate-400">•</span>
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <span className="text-slate-400 dark:text-zinc-600">•</span>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400">
                           <CalendarIcon className="h-3 w-3" />
-                          {formattedDate}
+                          <span>{formattedDate}</span>
                         </div>
                       </div>
-                      <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <BriefcaseIcon className="h-4 w-4 text-slate-500 shrink-0" />
-                        {interview.role}
+                      <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white tracking-tight font-sans flex items-center gap-2">
+                        <BriefcaseIcon className="h-4 w-4 text-slate-500 dark:text-zinc-400 shrink-0" />
+                        <span>{interview.role}</span>
                       </h2>
-                      <p className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded w-fit">
-                        {interview.experienceYears} Experience
+                      <p className="text-[10px] font-mono text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-2 py-0.5 rounded-md w-fit">
+                        {interview.experienceYears} Years Experience
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
-                      <div className="text-right">
-                        <span className="text-xs text-slate-400 block font-semibold">
-                          Evaluation Score
+                    <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-200 dark:border-zinc-800/80">
+                      <div className="text-right font-mono">
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 block uppercase font-semibold">
+                          score
                         </span>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-black text-gray-900">
+                          <span className="text-2xl font-semibold text-slate-900 dark:text-white font-sans tracking-tight">
                             {averageScore}
                           </span>
-                          <span className="text-xs text-slate-400">/ 10</span>
+                          <span className="text-xs text-slate-400 dark:text-zinc-500">/ 10</span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
                         {isExpanded ? (
-                          <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+                          <ChevronUpIcon className="h-5 w-5 text-slate-400 dark:text-zinc-400" />
                         ) : (
-                          <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                          <ChevronDownIcon className="h-5 w-5 text-slate-400 dark:text-zinc-400" />
                         )}
                       </div>
                     </div>
@@ -233,23 +235,23 @@ export default function InterviewHistoryPage() {
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="border-t border-gray-100 bg-slate-50/50"
+                        className="border-t border-slate-200 dark:border-zinc-800/80 bg-slate-50/60 dark:bg-zinc-900/30"
                       >
                         <div className="p-5 sm:p-6 space-y-6">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                            <div className="text-center sm:text-left">
-                              <span className="text-xs text-slate-400 font-semibold block">
-                                Total Questions
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white dark:bg-zinc-950 p-4 rounded-md border border-slate-200 dark:border-zinc-800 font-mono shadow-xs">
+                            <div>
+                              <span className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase block">
+                                TOTAL QUESTIONS
                               </span>
-                              <span className="text-lg font-bold text-slate-800">
+                              <span className="text-base font-semibold text-slate-900 dark:text-white font-sans">
                                 {interview.questions.length}
                               </span>
                             </div>
-                            <div className="text-center sm:text-left">
-                              <span className="text-xs text-slate-400 font-semibold block">
-                                Correctness Score
+                            <div>
+                              <span className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase block">
+                                CORRECTNESS
                               </span>
-                              <span className="text-lg font-bold text-slate-800">
+                              <span className="text-base font-semibold text-slate-900 dark:text-white font-sans">
                                 {interview.questions.length
                                   ? Math.round(
                                       (interview.questions.reduce(
@@ -263,11 +265,11 @@ export default function InterviewHistoryPage() {
                                 / 10
                               </span>
                             </div>
-                            <div className="text-center sm:text-left">
-                              <span className="text-xs text-slate-400 font-semibold block">
-                                Confidence Score
+                            <div>
+                              <span className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase block">
+                                CONFIDENCE
                               </span>
-                              <span className="text-lg font-bold text-slate-800">
+                              <span className="text-base font-semibold text-slate-900 dark:text-white font-sans">
                                 {interview.questions.length
                                   ? Math.round(
                                       (interview.questions.reduce(
@@ -281,11 +283,11 @@ export default function InterviewHistoryPage() {
                                 / 10
                               </span>
                             </div>
-                            <div className="text-center sm:text-left">
-                              <span className="text-xs text-slate-400 font-semibold block">
-                                Communication
+                            <div>
+                              <span className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase block">
+                                COMMUNICATION
                               </span>
-                              <span className="text-lg font-bold text-slate-800">
+                              <span className="text-base font-semibold text-slate-900 dark:text-white font-sans">
                                 {interview.questions.length
                                   ? Math.round(
                                       (interview.questions.reduce(
@@ -302,77 +304,68 @@ export default function InterviewHistoryPage() {
                           </div>
 
                           <div className="space-y-4">
-                            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                            <h3 className="text-xs font-mono font-semibold text-slate-700 dark:text-zinc-300 uppercase tracking-tight flex items-center gap-1.5">
                               <CheckCircle2Icon className="h-4 w-4 text-emerald-500" />
-                              Question Evaluation Details
+                              question evaluation details
                             </h3>
 
                             <div className="space-y-3">
                               {interview.questions.map((q, idx) => (
                                 <div
                                   key={q.id}
-                                  className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3"
+                                  className="bg-white dark:bg-zinc-950 p-4 rounded-md border border-slate-200 dark:border-zinc-800 space-y-3 font-mono shadow-xs"
                                 >
                                   <div className="flex justify-between items-start gap-2">
-                                    <span className="text-xs font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                                      Q{idx + 1}
+                                    <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-2 py-0.5 rounded-md">
+                                      q0{idx + 1}
                                     </span>
                                     <span
-                                      className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${getDifficultyColor(q.difficulty)}`}
+                                      className={`text-[10px] font-semibold border px-2 py-0.5 rounded-md ${getDifficultyBadge(q.difficulty)}`}
                                     >
                                       {q.difficulty}
                                     </span>
                                   </div>
-                                  <p className="text-sm font-semibold text-gray-800 leading-relaxed">
+                                  <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white leading-relaxed font-sans tracking-tight">
                                     {q.questionText}
                                   </p>
 
                                   {q.userAnswer ? (
-                                    <div className="pt-2 border-t border-slate-50 space-y-2">
+                                    <div className="pt-2 border-t border-slate-200 dark:border-zinc-800/60 space-y-2">
                                       <div className="text-xs">
-                                        <span className="font-bold text-slate-500 block">
-                                          Your Answer:
+                                        <span className="font-semibold text-slate-500 dark:text-zinc-400 block mb-1">
+                                          TRANSCRIBED ANSWER:
                                         </span>
-                                        <p className="text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-1">
-                                          {q.userAnswer}
+                                        <p className="text-slate-800 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-900/60 p-3 rounded-md border border-slate-200 dark:border-zinc-800 italic font-mono">
+                                          "{q.userAnswer}"
                                         </p>
                                       </div>
 
                                       {q.aiFeedback && (
                                         <div className="text-xs">
-                                          <span className="font-bold text-emerald-600 flex items-center gap-1">
+                                          <span className="font-semibold text-[#007cf0] flex items-center gap-1 mb-1">
                                             <MessageSquareIcon className="h-3 w-3" />
-                                            AI Evaluation & Feedback:
+                                            AI FEEDBACK & ANALYSIS:
                                           </span>
-                                          <p className="text-slate-600 bg-emerald-50/20 p-2.5 rounded-lg border border-emerald-100/50 mt-1">
+                                          <p className="text-slate-800 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-900/40 p-3 rounded-md border border-slate-200 dark:border-zinc-800 font-sans font-normal">
                                             {q.aiFeedback}
                                           </p>
                                         </div>
                                       )}
 
-                                      <div className="flex gap-4 pt-1 text-[11px] font-semibold text-slate-500">
+                                      <div className="flex gap-4 pt-1 text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
                                         <span>
-                                          Score:{" "}
-                                          <strong className="text-slate-800">
-                                            {q.questionScore}/10
-                                          </strong>
+                                          SCORE: <strong className="text-slate-900 dark:text-white">{q.questionScore}/10</strong>
                                         </span>
                                         <span>
-                                          Correctness:{" "}
-                                          <strong className="text-slate-800">
-                                            {q.correctnessScore}/10
-                                          </strong>
+                                          CORRECTNESS: <strong className="text-slate-900 dark:text-white">{q.correctnessScore}/10</strong>
                                         </span>
                                         <span>
-                                          Confidence:{" "}
-                                          <strong className="text-slate-800">
-                                            {q.confidenceScore}/10
-                                          </strong>
+                                          CONFIDENCE: <strong className="text-slate-900 dark:text-white">{q.confidenceScore}/10</strong>
                                         </span>
                                       </div>
                                     </div>
                                   ) : (
-                                    <p className="text-xs italic text-slate-400">
+                                    <p className="text-xs italic text-slate-400 dark:text-zinc-500">
                                       Skipped or unanswered.
                                     </p>
                                   )}

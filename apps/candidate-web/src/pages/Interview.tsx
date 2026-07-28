@@ -10,7 +10,7 @@ export default function InterviewPage() {
     useState<null | PracticeInterviewWithQuestion>(null);
 
   return (
-    <div className="min-h-screen bg-[#f3f3f3] flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white flex flex-col font-sans selection:bg-zinc-800 selection:text-white transition-colors">
       {step === 1 && (
         <Step1Setup
           onStart={(data) => {
@@ -28,7 +28,7 @@ export default function InterviewPage() {
           }}
         />
       )}
-      {step === 3 && interviewData &&(
+      {step === 3 && interviewData && (
         <Step3Report
           report={interviewData}
           onRetake={() => {
