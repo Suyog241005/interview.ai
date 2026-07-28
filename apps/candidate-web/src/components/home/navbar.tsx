@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { BrainCircuitIcon, CircleDollarSignIcon } from "lucide-react";
+import { CircleDollarSignIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "@interview.ai/ui/button";
 import { Avatar, AvatarBadge, AvatarImage } from "@interview.ai/ui/avatar";
@@ -39,10 +39,15 @@ export const Navbar = () => {
         transition={{ ease: "easeOut" }}
         className="w-full max-w-6xl bg-white rounded-[24px] shadow-sm border border-gray-200 px-8 py-4 flex justify-between items-center relative"
       >
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-          <div className="bg-black text-white p-2 rounded-lg">
-            <BrainCircuitIcon size={20} />
-          </div>
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <img
+            src="/icon.png"
+            alt="Interview.AI Logo"
+            className="w-8 h-8 object-contain"
+          />
           <h2 className="font-semibold text-lg hidden sm:block">
             Interview.AI
           </h2>
@@ -91,8 +96,12 @@ export const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-48 mt-3 -ml-12">
                     <div className="px-3 py-2 border-b border-gray-100">
-                      <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                      <p className="text-sm font-bold text-gray-900 truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {user.email}
+                      </p>
                     </div>
                     <DropdownMenuGroup>
                       <DropdownMenuItem

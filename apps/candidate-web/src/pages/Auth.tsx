@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@interview.ai/ui/card";
-import { BrainCircuitIcon, SparklesIcon } from "lucide-react";
+import { SparklesIcon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "motion/react";
 import { signIn } from "@interview.ai/better-auth/client";
@@ -32,9 +32,11 @@ export default function AuthPage() {
         <Card className="w-full max-w-md p-8 rounded-3xl bg-white shadow-2xl border border-gray-200">
           <CardHeader className="flex items-center justify-center gap-3 mb-6">
             <CardTitle className="text-4xl font-bold flex items-center justify-center gap-2">
-              <span className="bg-black text-white p-2 rounded-lg">
-                <BrainCircuitIcon />
-              </span>
+              <img
+                src="/icon.png"
+                alt="Interview.AI Logo"
+                className="w-9 h-9 object-contain"
+              />
               <h2 className="font-semibold text-lg">Interview.AI</h2>
             </CardTitle>
           </CardHeader>
