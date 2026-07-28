@@ -46,6 +46,10 @@ app.use(
   }),
 );
 
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
+
 // Better Auth routes
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
