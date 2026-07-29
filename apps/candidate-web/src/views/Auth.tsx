@@ -25,10 +25,7 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 dark:bg-black px-6 py-20 relative overflow-hidden font-sans selection:bg-zinc-800 selection:text-white transition-colors">
-      {/* Vercel Atmospheric Mesh Gradient Backdrop */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-tr from-[#007cf0]/20 via-[#7928ca]/20 to-[#ff0080]/20 blur-[100px] rounded-full pointer-events-none -z-10" />
-
-      {/* Grid Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40 dark:opacity-30 pointer-events-none -z-10" />
 
       <motion.div
@@ -38,7 +35,6 @@ export default function AuthPage() {
         className="w-full max-w-md relative z-10"
       >
         <Card className="w-full max-w-md p-8 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 shadow-xl relative overflow-hidden">
-          {/* Vercel Mesh Gradient Top Hairline */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080]" />
 
           <CardHeader className="flex items-center justify-center gap-3 mb-6 p-0 pt-2">

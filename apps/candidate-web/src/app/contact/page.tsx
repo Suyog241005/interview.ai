@@ -1,10 +1,10 @@
-import ContactPage from "@/pages/Contact";
+import ContactPage from "@/views/Contact";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Contact Us | Interview.AI",
   description:
-    "Get in touch with the Interview.AI support team for candidate inquiries, practice credit assistance, or platform feedback.",
+    "Get in touch with the Interview.AI support and engineering team for assistance, feedback, or enterprise inquiries.",
   alternates: {
     canonical: "/contact",
   },

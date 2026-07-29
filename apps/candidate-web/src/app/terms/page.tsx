@@ -1,10 +1,10 @@
-import TermsPage from "@/pages/Terms";
+import TermsPage from "@/views/Terms";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions | Interview.AI",
   description:
-    "Review the Terms & Conditions governing your usage of the Interview.AI candidate mock interview platform, practice credits, and AI evaluation engine.",
+    "Review the terms of service, practice credit usage policies, and candidate agreement for Interview.AI.",
   alternates: {
     canonical: "/terms",
   },

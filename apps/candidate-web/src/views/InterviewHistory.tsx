@@ -374,7 +374,6 @@ export default function InterviewHistoryPage() {
       <Navbar />
 
       <main className="flex-1 px-4 py-12 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
-        {/* Header section */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}

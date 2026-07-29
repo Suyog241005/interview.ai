@@ -7,7 +7,10 @@ import { trpc, createTrpcClient } from "@interview.ai/api/client";
 import { ThemeProvider } from "@/components/theme-provider";
 
 function getApiUrl(): string {
-  if (process.env.NEXT_PUBLIC_PROD_API_URL && process.env.NODE_ENV === "production") {
+  if (
+    process.env.NEXT_PUBLIC_PROD_API_URL &&
+    process.env.NODE_ENV === "production"
+  ) {
     return process.env.NEXT_PUBLIC_PROD_API_URL;
   }
   if (process.env.NEXT_PUBLIC_DEV_API_URL) {
