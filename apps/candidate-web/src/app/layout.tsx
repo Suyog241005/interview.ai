@@ -22,6 +22,14 @@ export const metadata: Metadata = {
   },
   description:
     "Master technical & behavioral loops with our free online interview AI tool. Experience speech-driven online AI interview practice, custom role prompts, and instant diagnostic feedback.",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

@@ -1,9 +1,29 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
 import { useTheme } from "./theme-provider";
 
 export function ThemeToggle() {
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        size="icon"
+        className="rounded-full cursor-pointer w-9 h-9 border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 transition-colors shadow-xs"
+      >
+        <span className="sr-only">Toggle theme</span>
+      </Button>
+    );
+  }
 
   return (
     <Button
