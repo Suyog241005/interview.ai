@@ -1,3 +1,5 @@
+"use client";
+
 import { Step1Setup } from "@/components/interview/step-1-setup";
 import { Step2Interview } from "@/components/interview/step-2-interview";
 import { Step3Report } from "@/components/interview/step-3-report";

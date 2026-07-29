@@ -1,3 +1,5 @@
+"use client";
+
 import { BsClock, BsMic, BsRobot } from "react-icons/bs";
 import { motion } from "motion/react";
 

@@ -1,15 +1,15 @@
 import {
   CreatePracticeInterviewQuestionsSchema,
   type CreatePracticeInterviewQuestions,
-} from "./ai/index.ts";
+} from "./ai";
 import {
   CreatePracticeInterviewSchema,
   StartPracticeInterviewSchema,
   type CreatePracticeInterviewRequest,
   type CreatePracticeInterviewResponse,
-} from "./interview/index.ts";
-import { type ResumeAnalysis, ResumeAnalysisSchema } from "./resume/index.ts";
-import { type GetUserResponse } from "./user/index.ts";
+} from "./interview";
+import { type ResumeAnalysis, ResumeAnalysisSchema } from "./resume";
+import { type GetUserResponse } from "./user";
 
 export type {
   CreatePracticeInterviewRequest,

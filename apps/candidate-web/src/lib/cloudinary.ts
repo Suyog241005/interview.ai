@@ -1,12 +1,20 @@
 export const uploadToCloudinary = async (file: File): Promise<string> => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  const cloudName =
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
+    process.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset =
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+    process.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   if (!cloudName) {
-    throw new Error("Cloudinary Cloud Name is missing in .env (VITE_CLOUDINARY_CLOUD_NAME)");
+    throw new Error(
+      "Cloudinary Cloud Name is missing in .env (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME or VITE_CLOUDINARY_CLOUD_NAME)",
+    );
   }
   if (!uploadPreset) {
-    throw new Error("Cloudinary Upload Preset is missing in .env (VITE_CLOUDINARY_UPLOAD_PRESET)");
+    throw new Error(
+      "Cloudinary Upload Preset is missing in .env (NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET or VITE_CLOUDINARY_UPLOAD_PRESET)",
+    );
   }
 
   const formData = new FormData();
@@ -27,7 +35,9 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     console.error("Cloudinary upload error:", errorData);
-    throw new Error(errorData?.error?.message || "Failed to upload file to Cloudinary");
+    throw new Error(
+      errorData?.error?.message || "Failed to upload file to Cloudinary",
+    );
   }
 
   const data = await res.json();
