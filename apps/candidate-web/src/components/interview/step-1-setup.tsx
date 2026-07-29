@@ -1,3 +1,5 @@
+"use client";
+
 import {
   BriefcaseBusinessIcon,
   ChartLineIcon,
@@ -248,7 +250,7 @@ export const Step1Setup = ({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
+                        <label className="text-[11px] font-mono tracking-tight text-[#1c69d4] dark:text-[#007cf0] block uppercase font-semibold">
                           Years of experience *
                         </label>
                         <div className="flex items-center gap-2 bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus-within:border-slate-400 dark:focus-within:border-white transition-colors px-3 py-1 rounded-md">

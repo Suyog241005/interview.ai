@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -11,7 +13,7 @@ import {
   MessageSquareIcon,
 } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
-import { useNavigate } from "react-router";
+import { useRouter } from "next/navigation";
 import type { PracticeInterviewWithQuestion } from "@interview.ai/api/client";
 import type { PracticeQuestion } from "@interview.ai/types/db";
 
@@ -22,7 +24,7 @@ export const Step3Report = ({
   report: PracticeInterviewWithQuestion;
   onRetake: () => void;
 }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(
     report.questions[0]?.id || null,
   );
@@ -92,7 +94,7 @@ export const Step3Report = ({
               <span>New Interview</span>
             </Button>
             <Button
-              onClick={() => navigate("/")}
+              onClick={() => router.push("/")}
               className="px-5 py-2.5 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 font-medium text-xs tracking-tight gap-2 cursor-pointer transition-all shadow-md font-sans"
             >
               <HomeIcon className="h-3.5 w-3.5" />

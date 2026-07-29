@@ -1,6 +1,8 @@
+"use client";
+
 import { ArrowRightIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useNavigate } from "react-router";
+import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTrigger } from "@interview.ai/ui/dialog";
 import { AuthDialog } from "../auth/auth-dialog";
 import { useSession } from "@interview.ai/better-auth/client";
@@ -8,7 +10,7 @@ import { useSession } from "@interview.ai/better-auth/client";
 export const Hero = () => {
   const { data: session } = useSession();
   const user = session?.user;
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="relative pt-16 pb-24 overflow-hidden">
@@ -60,7 +62,7 @@ export const Hero = () => {
         >
           {user ? (
             <button
-              onClick={() => navigate("/interview")}
+              onClick={() => router.push("/interview")}
               className="group inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-sm rounded-full hover:bg-black dark:hover:bg-zinc-200 transition-all cursor-pointer shadow-lg"
             >
               <span>Start Interview Session</span>
@@ -82,7 +84,7 @@ export const Hero = () => {
 
           {user && (
             <button
-              onClick={() => navigate("/history")}
+              onClick={() => router.push("/history")}
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-300 border border-slate-200 dark:border-zinc-800 text-sm font-medium rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer shadow-xs"
             >
               <span>View Past History</span>

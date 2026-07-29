@@ -1,21 +1,20 @@
 import { createAuthClient } from "better-auth/react";
 
 const getBaseUrl = () => {
-  const isProd = import.meta.env.PROD || import.meta.env.MODE === "production";
-  if (isProd) {
-    return (
-      import.meta.env.VITE_PROD_AUTH_URL ||
-      import.meta.env.VITE_PROD_API_URL ||
-      (globalThis as unknown as { location?: { origin: string } }).location?.origin ||
-      ""
-    );
+  const nextPublicProdAuth = process?.env?.NEXT_PUBLIC_PROD_AUTH_URL || process?.env?.NEXT_PUBLIC_PROD_API_URL;
+  const nextPublicDevAuth = process?.env?.NEXT_PUBLIC_DEV_AUTH_URL || process?.env?.NEXT_PUBLIC_DEV_API_URL || process?.env?.NEXT_PUBLIC_API_URL;
+
+  if (nextPublicProdAuth || nextPublicDevAuth) {
+    const isProd = process?.env?.NODE_ENV === "production";
+    if (isProd && nextPublicProdAuth) return nextPublicProdAuth;
+    if (nextPublicDevAuth) return nextPublicDevAuth;
   }
-  return (
-    import.meta.env.VITE_DEV_AUTH_URL ||
-    import.meta.env.VITE_DEV_API_URL ||
-    import.meta.env.VITE_AUTH_URL ||
-    "http://localhost:3001"
-  );
+
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return "http://localhost:3001";
 };
 
 const authClient = createAuthClient({

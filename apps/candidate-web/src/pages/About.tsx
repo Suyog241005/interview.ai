@@ -1,3 +1,5 @@
+"use client";
+
 import { Navbar } from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
 import { motion } from "motion/react";
@@ -10,10 +12,10 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
-import { useNavigate } from "react-router";
+import { useRouter } from "next/navigation";
 
 export default function AboutPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white flex flex-col font-sans selection:bg-zinc-800 selection:text-white transition-colors">
@@ -45,7 +47,7 @@ export default function AboutPage() {
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Button
-              onClick={() => navigate("/interview")}
+              onClick={() => router.push("/interview")}
               className="px-6 py-3 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 font-medium text-xs tracking-tight cursor-pointer shadow-md font-sans"
             >
               Start Practice Session →

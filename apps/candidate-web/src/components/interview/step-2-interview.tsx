@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import femaleVideo from "@/assets/Videos/female-ai.mp4";
@@ -15,16 +17,15 @@ import {
   trpc,
   type PracticeInterviewWithQuestion,
 } from "@interview.ai/api/client";
-import type { PracticeInterview } from "@interview.ai/api/client";
 
 declare global {
   interface Window {
-    webkitSpeechRecognition: any;
-    SpeechRecognition: any;
+    webkitSpeechRecognition: unknown;
+    SpeechRecognition: unknown;
   }
 }
 
-export const Step2Interview = ({
+const LiveInterviewContent = ({
   interviewData,
   onComplete,
 }: {
@@ -37,26 +38,19 @@ export const Step2Interview = ({
     questions[currentQIndex].timeLimitSeconds,
   );
   const [interviewStarted, setInterviewStarted] = useState(false);
-  const [interview, setInterview] = useState<PracticeInterview | null>(null);
-  const recognitionRef = useRef<any>(null);
-
+  const recognitionRef = useRef<unknown>(null);
   const transcriptRef = useRef("");
-
   const [liveTranscript, setLiveTranscript] = useState("");
 
   const { data: fetchedInterviewData } =
     trpc.practice.getPracticeInterview.useQuery({ id });
+  const interview = fetchedInterviewData?.practiceInterview ?? null;
+
   const startInterviewMutation =
     trpc.practice.startPracticeInterview.useMutation();
   const submitAnswerMutation = trpc.practice.submitAnswer.useMutation();
   const generateReportMutation =
     trpc.practice.generatePracticeInterviewReport.useMutation();
-
-  useEffect(() => {
-    if (fetchedInterviewData?.practiceInterview) {
-      setInterview(fetchedInterviewData.practiceInterview);
-    }
-  }, [fetchedInterviewData]);
 
   const startRecognition = () => {
     const SpeechRecognition =
@@ -69,13 +63,13 @@ export const Step2Interview = ({
 
     if (recognitionRef.current) {
       try {
-        recognitionRef.current.abort();
+        (recognitionRef.current as { abort: () => void }).abort();
       } catch (e) {
         console.error("Failed to abort previous recognition:", e);
       }
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition = new (SpeechRecognition as any)();
 
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -108,7 +102,7 @@ export const Step2Interview = ({
   };
 
   const stopRecognition = () => {
-    const recognition = recognitionRef.current;
+    const recognition = recognitionRef.current as { stop: () => void } | null;
 
     if (recognition) {
       recognition.stop();
@@ -164,12 +158,6 @@ export const Step2Interview = ({
   };
 
   useEffect(() => {
-    if (fetchedInterviewData) {
-      setInterview(fetchedInterviewData.practiceInterview);
-    }
-  }, [fetchedInterviewData]);
-
-  useEffect(() => {
     if (interviewStarted) {
       setTimeout(() => {
         speak(questions[currentQIndex].questionText || "", () => {
@@ -177,15 +165,19 @@ export const Step2Interview = ({
         });
       }, 1000);
     }
-  }, [currentQIndex, interviewStarted]);
+  }, [currentQIndex, interviewStarted, questions]);
 
   useEffect(() => {
     return () => {
-      window.speechSynthesis.cancel();
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
       if (recognitionRef.current) {
         try {
-          recognitionRef.current.abort();
-        } catch (e) {}
+          (recognitionRef.current as { abort: () => void }).abort();
+        } catch (_err) {
+          // ignore cleanup error
+        }
       }
     };
   }, []);
@@ -193,13 +185,10 @@ export const Step2Interview = ({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-zinc-800 selection:text-white transition-colors">
       <div className="w-full max-w-7xl min-h-[85vh] bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-xl flex flex-col lg:flex-row overflow-hidden relative">
-        {/* Vercel Mesh Gradient Top Hairline */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080] z-20" />
 
-        {/* Video / Controls Sidebar */}
         <div className="w-full lg:w-[35%] bg-slate-100/70 dark:bg-zinc-900/60 p-6 flex flex-col items-center justify-between border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-zinc-800/80">
           <div className="w-full flex flex-col items-center gap-6">
-            {/* Header Eyebrow */}
             <div className="w-full flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
               <span className="text-[11px] font-mono tracking-tight text-[#007cf0] font-semibold">
                 cockpit // stream
@@ -210,7 +199,6 @@ export const Step2Interview = ({
               </span>
             </div>
 
-            {/* AI Video Feed */}
             <div className="w-full max-w-xs bg-slate-900 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-md overflow-hidden shadow-xl relative group">
               <video
                 src={femaleVideo}
@@ -224,7 +212,6 @@ export const Step2Interview = ({
             </div>
           </div>
 
-          {/* Timer / Live Controls */}
           {interviewStarted ? (
             <div className="w-full max-w-xs bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-5 rounded-md mt-6 shadow-xs">
               <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-zinc-800">
@@ -287,7 +274,6 @@ export const Step2Interview = ({
           )}
         </div>
 
-        {/* Main Content Area */}
         {interviewStarted ? (
           <div className="flex-1 flex flex-col p-6 sm:p-10 justify-between bg-white dark:bg-zinc-950 relative">
             <div>
@@ -305,7 +291,6 @@ export const Step2Interview = ({
                 </span>
               </div>
 
-              {/* Question Text Box */}
               <div className="bg-slate-50 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 p-6 rounded-lg mb-6 shadow-xs">
                 <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-zinc-500 block mb-2">prompt</span>
                 <h3 className="text-base sm:text-xl font-semibold text-slate-900 dark:text-white leading-relaxed font-sans tracking-tight">
@@ -313,7 +298,6 @@ export const Step2Interview = ({
                 </h3>
               </div>
 
-              {/* Transcript Display Box */}
               <div className="bg-slate-50/50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 p-6 rounded-lg min-h-[140px]">
                 <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-zinc-500 block mb-2">live transcript // speech-recognition</span>
                 <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 font-mono leading-relaxed italic">
@@ -322,7 +306,6 @@ export const Step2Interview = ({
               </div>
             </div>
 
-            {/* Next Question CTA */}
             <div className="pt-6 border-t border-slate-200 dark:border-zinc-800 flex justify-end mt-8">
               <Button
                 onClick={handleNextQuestion}
@@ -347,7 +330,6 @@ export const Step2Interview = ({
                 </p>
               </div>
 
-              {/* Dynamic Info Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-start gap-3 p-5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/60 font-mono shadow-xs">
                   <BriefcaseIcon className="h-5 w-5 text-slate-500 dark:text-zinc-400 mt-0.5 shrink-0" />
@@ -377,7 +359,6 @@ export const Step2Interview = ({
                 </div>
               </div>
 
-              {/* Rules / Compliance */}
               <div className="p-5 rounded-lg bg-amber-50/80 dark:bg-zinc-900/90 border border-amber-200 dark:border-zinc-800 font-mono space-y-2">
                 <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-tight">
                   <ShieldAlertIcon size={16} />
@@ -391,7 +372,6 @@ export const Step2Interview = ({
               </div>
             </div>
 
-            {/* Launch CTA */}
             <div className="pt-6 border-t border-slate-200 dark:border-zinc-800 flex justify-end mt-8">
               <Button
                 onClick={async () => {
@@ -417,4 +397,25 @@ export const Step2Interview = ({
       </div>
     </div>
   );
+};
+
+export const Step2Interview = (props: {
+  interviewData: PracticeInterviewWithQuestion;
+  onComplete: (report: PracticeInterviewWithQuestion) => void;
+}) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white flex items-center justify-center">
+        <span className="text-xs font-mono text-slate-500">Loading interview cockpit...</span>
+      </div>
+    );
+  }
+
+  return <LiveInterviewContent {...props} />;
 };

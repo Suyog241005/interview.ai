@@ -1,4 +1,8 @@
-import { useNavigate, useLocation } from "react-router";
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { CircleDollarSignIcon, HistoryIcon, LogOutIcon } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
 import { Avatar, AvatarBadge, AvatarImage } from "@interview.ai/ui/avatar";
@@ -15,19 +19,50 @@ import { useSession } from "@interview.ai/better-auth/client";
 import { trpc } from "@interview.ai/api/client";
 import { ThemeToggle } from "../theme-toggle";
 
+const CandidateCredits = () => {
+  const router = useRouter();
+  const { data: candidate } = trpc.candidate.getCandidate.useQuery();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 bg-slate-100 dark:bg-zinc-900/90 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full text-xs font-mono tracking-tight hover:border-slate-300 dark:hover:border-zinc-700 cursor-pointer transition-all text-slate-800 dark:text-zinc-200">
+          <CircleDollarSignIcon size={14} className="text-amber-500 dark:text-amber-400" />
+          <span>Credits: {candidate?.credits ?? 0}</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-72 mt-2 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-200 rounded-lg shadow-xl">
+        <div className="flex flex-col items-center gap-3 p-4 text-center">
+          <p className="text-xs text-slate-500 dark:text-zinc-400">
+            Need additional practice credits to continue AI assessments?
+          </p>
+          <Button
+            className="w-full bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-xs rounded-full hover:bg-black dark:hover:bg-zinc-200"
+            onClick={() => router.push("/pricing")}
+          >
+            Get More Credits
+          </Button>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 export const Navbar = () => {
+  const [mounted, setMounted] = useState(false);
   const { data: session, isPending } = useSession();
   const user = session?.user;
-  const { data: candidate } = trpc.candidate.getCandidate.useQuery(undefined, {
-    enabled: !!user,
-  });
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     try {
       await signOut();
-      navigate("/");
+      router.push("/");
     } catch (error) {
       console.log(error);
     }
@@ -48,9 +83,9 @@ export const Navbar = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
-        <div
+        <Link
+          href="/"
           className="flex items-center gap-2.5 cursor-pointer group"
-          onClick={() => navigate("/")}
         >
           <div className="p-1 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 group-hover:border-slate-300 dark:group-hover:border-zinc-700 transition-colors">
             <img
@@ -62,16 +97,16 @@ export const Navbar = () => {
           <h2 className="font-semibold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white font-sans">
             Interview<span className="text-slate-400 dark:text-zinc-500 font-mono text-xs ml-0.5">.ai</span>
           </h2>
-        </div>
+        </Link>
 
-        {/* Middle Navigation Links (MPA Router Links) */}
+        {/* Middle Navigation Links (Next.js App Router Links) */}
         <div className="hidden md:flex items-center gap-1 bg-slate-100/70 dark:bg-zinc-900/60 p-1 rounded-full border border-slate-200/80 dark:border-zinc-800/80">
           {navLinks.map((link) => {
-            const isActive = location.pathname === link.path;
+            const isActive = pathname === link.path;
             return (
-              <button
+              <Link
                 key={link.path}
-                onClick={() => navigate(link.path)}
+                href={link.path}
                 className={`px-3 py-1 text-xs font-sans rounded-full transition-all cursor-pointer ${
                   isActive
                     ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold shadow-xs"
@@ -79,7 +114,7 @@ export const Navbar = () => {
                 }`}
               >
                 {link.label}
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -89,30 +124,8 @@ export const Navbar = () => {
           {/* Theme Toggle Button */}
           <ThemeToggle />
 
-          {/* Credits Badge */}
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 bg-slate-100 dark:bg-zinc-900/90 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full text-xs font-mono tracking-tight hover:border-slate-300 dark:hover:border-zinc-700 cursor-pointer transition-all text-slate-800 dark:text-zinc-200">
-                  <CircleDollarSignIcon size={14} className="text-amber-500 dark:text-amber-400" />
-                  <span>Credits: {candidate?.credits ?? 0}</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-72 mt-2 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-200 rounded-lg shadow-xl">
-                <div className="flex flex-col items-center gap-3 p-4 text-center">
-                  <p className="text-xs text-slate-500 dark:text-zinc-400">
-                    Need additional practice credits to continue AI assessments?
-                  </p>
-                  <Button
-                    className="w-full bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-xs rounded-full hover:bg-black dark:hover:bg-zinc-200"
-                    onClick={() => navigate("/pricing")}
-                  >
-                    Get More Credits
-                  </Button>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {/* Credits Badge - rendered only after client mount */}
+          {mounted && user && <CandidateCredits />}
 
           {/* User Profile / Login Action */}
           {isPending ? (
@@ -146,7 +159,7 @@ export const Navbar = () => {
                 </div>
                 <DropdownMenuGroup className="p-1">
                   <DropdownMenuItem
-                    onClick={() => navigate("/history")}
+                    onClick={() => router.push("/history")}
                     className="cursor-pointer text-xs font-medium text-slate-700 dark:text-zinc-300 focus:bg-slate-100 dark:focus:bg-zinc-900 focus:text-slate-900 dark:focus:text-white rounded-md flex items-center gap-2"
                   >
                     <HistoryIcon size={14} />
@@ -167,7 +180,7 @@ export const Navbar = () => {
             </DropdownMenu>
           ) : (
             <Button
-              onClick={() => navigate("/auth")}
+              onClick={() => router.push("/auth")}
               className="px-4 py-1.5 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 text-xs font-medium tracking-tight cursor-pointer transition-all shadow-sm"
             >
               Sign In

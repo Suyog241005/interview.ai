@@ -1,3 +1,5 @@
+"use client";
+
 import confiImg from "@/assets/confi.png";
 import creditImg from "@/assets/credit.png";
 import hrImg from "@/assets/HR.png";
@@ -57,7 +59,7 @@ export const InterviewModes = () => {
               {/* Thumbnail Container */}
               <div className="w-full sm:w-2/5 shrink-0 overflow-hidden bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-md h-40 relative">
                 <img
-                  src={item.image}
+                  src={typeof item.image === "string" ? item.image : (item.image as any)?.src || item.image}
                   alt={item.title}
                   className="w-full h-full object-cover opacity-90 dark:opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
                 />
