@@ -1,4 +1,4 @@
-import InterviewHistoryPage from "@/pages/InterviewHistory";
+import InterviewHistoryPage from "@/views/InterviewHistory";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

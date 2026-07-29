@@ -1,10 +1,10 @@
-import AboutPage from "@/pages/About";
+import AboutPage from "@/views/About";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About Us | Interview.AI",
   description:
-    "Interview.AI is an intelligent assessment platform built to help software engineers, product managers, and technical candidates master technical & behavioral interviews.",
+    "Learn about our mission to democratize technical and behavioral interview preparation through voice-driven AI feedback.",
   alternates: {
     canonical: "/about",
   },

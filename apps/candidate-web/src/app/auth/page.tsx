@@ -1,12 +1,13 @@
-import AuthPage from "@/pages/Auth";
+import AuthPage from "@/views/Auth";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Candidate Sign In | Interview.AI",
+  title: "Candidate Authentication | Interview.AI",
   description:
-    "Sign in to your candidate account to access AI mock interviews, performance history, and diagnostic reports.",
-  alternates: {
-    canonical: "/auth",
+    "Sign in to your candidate account with Google OAuth to access mock interviews and voice feedback.",
+  robots: {
+    index: false,
+    follow: false,
   },
 };
 

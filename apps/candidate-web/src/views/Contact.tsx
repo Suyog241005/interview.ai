@@ -28,33 +28,26 @@ export default function ContactPage() {
       <Navbar />
 
       <main className="flex-1 px-4 py-16 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-12">
-        {/* Header Block */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="relative bg-white dark:bg-zinc-950 p-8 sm:p-12 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden text-center sm:text-left"
         >
-          {/* Vercel Mesh Gradient Top Hairline */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080]" />
-
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 mb-3 text-[11px] font-mono tracking-tight uppercase text-[#007cf0] rounded-full">
             <MailIcon className="h-3.5 w-3.5" />
             <span>contact // candidate-support</span>
           </div>
-
           <h1 className="text-3xl sm:text-4xl font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
             Get in touch with our engineering team.
           </h1>
-
           <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-normal mt-2 max-w-xl font-sans">
             Have questions about AI interview scoring, speech recognition, custom enterprise loops, or practice credits? Send us a message.
           </p>
         </motion.div>
 
-        {/* Form and Contact Info Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Left Info Sidebar */}
           <motion.div
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
@@ -109,7 +102,6 @@ export default function ContactPage() {
             </div>
           </motion.div>
 
-          {/* Right Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}

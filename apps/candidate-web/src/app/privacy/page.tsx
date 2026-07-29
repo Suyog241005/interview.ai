@@ -1,10 +1,10 @@
-import PrivacyPage from "@/pages/Privacy";
+import PrivacyPage from "@/views/Privacy";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Interview.AI",
   description:
-    "Read the Interview.AI privacy policy covering candidate data protection, transcript handling, PDF resume security, and account governance.",
+    "Review our candidate privacy, audio transcript processing, resume encryption, and data governance practices.",
   alternates: {
     canonical: "/privacy",
   },
