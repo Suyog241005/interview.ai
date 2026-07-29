@@ -6,6 +6,10 @@ import AuthPage from "./pages/Auth";
 import InterviewPage from "./pages/Interview";
 import InterviewHistoryPage from "./pages/InterviewHistory";
 import HomePage from "./pages/Home";
+import AboutPage from "./pages/About";
+import PrivacyPage from "./pages/Privacy";
+import TermsPage from "./pages/Terms";
+import ContactPage from "./pages/Contact";
 
 function App() {
   const {
@@ -35,8 +39,8 @@ function App() {
 
   if (isLoading || becomeCandidate.isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2Icon className="animate-spin text-gray-500" size={32} />
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-black text-slate-900 dark:text-white">
+        <Loader2Icon className="animate-spin text-slate-500" size={32} />
       </div>
     );
   }
@@ -44,6 +48,10 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route
         path="/auth"
         element={!candidate ? <AuthPage /> : <Navigate to="/" replace />}
@@ -60,6 +68,7 @@ function App() {
           candidate ? <InterviewHistoryPage /> : <Navigate to="/auth" replace />
         }
       />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

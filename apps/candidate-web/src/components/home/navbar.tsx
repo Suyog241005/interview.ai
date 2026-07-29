@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { CircleDollarSignIcon, HistoryIcon, LogOutIcon } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
 import { Avatar, AvatarBadge, AvatarImage } from "@interview.ai/ui/avatar";
@@ -22,6 +22,7 @@ export const Navbar = () => {
     enabled: !!user,
   });
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -31,6 +32,14 @@ export const Navbar = () => {
       console.log(error);
     }
   };
+
+  const navLinks = [
+    { label: "Home", path: "/" },
+    { label: "About", path: "/about" },
+    { label: "Contact", path: "/contact" },
+    { label: "Privacy", path: "/privacy" },
+    { label: "Terms", path: "/terms" },
+  ];
 
   return (
     <div className="sticky top-0 z-50 w-full bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 transition-colors">
@@ -53,6 +62,26 @@ export const Navbar = () => {
           <h2 className="font-semibold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white font-sans">
             Interview<span className="text-slate-400 dark:text-zinc-500 font-mono text-xs ml-0.5">.ai</span>
           </h2>
+        </div>
+
+        {/* Middle Navigation Links (MPA Router Links) */}
+        <div className="hidden md:flex items-center gap-1 bg-slate-100/70 dark:bg-zinc-900/60 p-1 rounded-full border border-slate-200/80 dark:border-zinc-800/80">
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.path;
+            return (
+              <button
+                key={link.path}
+                onClick={() => navigate(link.path)}
+                className={`px-3 py-1 text-xs font-sans rounded-full transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold shadow-xs"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                {link.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Right Section Controls */}
