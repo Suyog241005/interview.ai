@@ -6,6 +6,7 @@ import { Hero } from "@/components/home/hero";
 import { StepsCards } from "@/components/home/steps-cards";
 import { CapabilitiesCards } from "@/components/home/capabilities-cards";
 import { InterviewModes } from "@/components/home/interview-modes";
+import { SeoOverview } from "@/components/home/seo-overview";
 
 export default function HomePage() {
   return (
@@ -16,6 +17,7 @@ export default function HomePage() {
         <StepsCards />
         <CapabilitiesCards />
         <InterviewModes />
+        <SeoOverview />
       </main>
       <Footer />
     </div>
