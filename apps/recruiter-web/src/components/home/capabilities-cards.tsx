@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "motion/react";
 import {
   BsBarChart,
@@ -9,73 +11,77 @@ import pdfImg from "@/assets/pdf.png";
 import resumeImg from "@/assets/resume.png";
 
 export const CapabilitiesCards = () => {
-    const capabilities = [
+  const capabilities = [
     {
       image: evalImg,
-      icon: <BsBarChart size={20} />,
-      title: "AI Answer Evaluation",
-      desc: "Scores communication, technical accuracy and confidence",
+      icon: <BsBarChart size={16} className="text-slate-900 dark:text-white" />,
+      title: "AI answer evaluation & metrics",
+      desc: "Evaluates sentence delivery, technical depth, confidence index, and answer correctness with instant score breakdowns.",
     },
     {
       image: resumeImg,
-      icon: <BsFileEarmarkText size={20} />,
-      title: "Resume Based Interview",
-      desc: "AI will ask questions based on your resume",
+      icon: <BsFileEarmarkText size={16} className="text-slate-900 dark:text-white" />,
+      title: "Resume context parsing",
+      desc: "Upload your PDF resume to extract projects, tech stacks, and domain experience for personalized question generation.",
     },
     {
       image: pdfImg,
-      icon: <BsFileEarmarkText size={20} />,
-      title: "Downloadable PDF Report of Interview",
-      desc: "Get a detailed PDF report of your interview",
+      icon: <BsFileEarmarkText size={16} className="text-slate-900 dark:text-white" />,
+      title: "Exportable evaluation reports",
+      desc: "Generate comprehensive diagnostic reports highlighting detailed question feedback, strengths, and targeted improvement tips.",
     },
     {
       image: historyImg,
-      icon: <BsBarChart size={20} />,
-      title: "Interview History",
-      desc: "Scores communication, technical accuracy and confidence",
+      icon: <BsBarChart size={16} className="text-slate-900 dark:text-white" />,
+      title: "Historical performance tracking",
+      desc: "Track score trends, difficulty progression, and historical interview sessions over time inside your candidate dashboard.",
     },
   ];
-  return (
-    <div className="mb-32">
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center text-4xl font-semibold mb-16"
-      >
-        Advance AI-Powered Interview Platform
-      </motion.h2>
 
-      <div className="grid md:grid-cols-2 gap-10">
+  return (
+    <div className="my-28">
+      <div className="text-center mb-14">
+        <span className="text-xs font-mono text-[#007cf0] uppercase tracking-tight block font-semibold mb-1">
+          capabilities // core-platform
+        </span>
+        <h2 className="text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white tracking-[-1.28px] font-sans">
+          Advanced AI-powered interview platform.
+        </h2>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
         {capabilities.map((item, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all"
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: index * 0.1 }}
+            className="group bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 p-6 rounded-lg shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-250"
           >
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="w-full md:w-1/3">
-                <div className="w-full h-40 bg-gray-100 rounded-xl">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            <div className="flex flex-col sm:flex-row items-start gap-5">
+              {/* Image Thumbnail Frame */}
+              <div className="w-full sm:w-2/5 shrink-0 overflow-hidden bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-md h-40 relative">
+                <img
+                  src={typeof item.image === "string" ? item.image : (item.image as any)?.src || item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover opacity-90 dark:opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                />
               </div>
-              <div className="w-full md:w-2/3">
-                <div className="bg-gray-100 p-2 m-5 rounded-full w-fit">
-                  {item.icon}
+
+              {/* Text Description */}
+              <div className="w-full sm:w-3/5 flex flex-col justify-between h-full">
+                <div>
+                  <div className="p-2 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-md w-fit mb-3">
+                    {item.icon}
+                  </div>
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mb-1.5 font-sans">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal leading-relaxed font-sans">
+                    {item.desc}
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  {item.desc}
-                </p>
               </div>
             </div>
           </motion.div>

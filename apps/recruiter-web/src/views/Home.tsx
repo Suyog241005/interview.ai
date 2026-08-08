@@ -1,20 +1,26 @@
+"use client";
+
 import { Navbar } from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
 import { Hero } from "@/components/home/hero";
 import { StepsCards } from "@/components/home/steps-cards";
 import { CapabilitiesCards } from "@/components/home/capabilities-cards";
 import { InterviewModes } from "@/components/home/interview-modes";
+import { SeoOverview } from "@/components/home/seo-overview";
+import { FaqSection } from "@/components/home/faq-section";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#f3f3f3] flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white flex flex-col font-sans selection:bg-zinc-800 selection:text-white transition-colors">
       <Navbar />
-      <div className="flex-1 px-6 py-20 max-w-6xl mx-auto">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <Hero />
         <StepsCards />
         <CapabilitiesCards />
         <InterviewModes />
-      </div>
+        <SeoOverview />
+        <FaqSection />
+      </main>
       <Footer />
     </div>
   );

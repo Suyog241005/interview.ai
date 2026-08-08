@@ -1,72 +1,71 @@
-import { motion } from "motion/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@interview.ai/ui/card";
-import { BrainCircuitIcon, SparklesIcon } from "lucide-react";
+"use client";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@interview.ai/ui/card";
+import { SparklesIcon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { useAtom } from "jotai";
-import { userAtom } from "@/jotai/atoms";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
-import { useLogin } from "@interview.ai/query";
+import { motion } from "motion/react";
+import { signIn } from "@interview.ai/better-auth/client";
 
 export const AuthDialog = () => {
-  const [_user, setUser] = useAtom(userAtom);
   const handleGoogleAuth = async () => {
     try {
-      const data = await signInWithPopup(auth, googleProvider);
-      const { mutateAsync } = useLogin();
-
-      if (data && data.user && data.user.displayName && data.user.email) {
-        await mutateAsync(
-          {
-            name: data.user.displayName,
-            email: data.user.email,
-            photoUrl: data.user.photoURL || '',
-          },
-          {
-            onSuccess: ({ data }) => {
-              setUser(data?.user);
-            },
-            onError: () => {
-              alert("Something went wrong");
-            },
-          },
-        );
-      }
+      await signIn.social({
+        provider: "google",
+        callbackURL: window.location.origin,
+      });
     } catch (error) {
-      console.log(error);
+      console.error("Google authentication error:", error);
     }
   };
+
   return (
-    <div className="w-full max-w-md">
-      <Card className="w-full max-w-md p-8 rounded-3xl">
-        <CardHeader className="flex items-center justify-center gap-3 mb-6">
-          <CardTitle className="text-4xl font-bold flex items-center justify-center gap-2">
-            <span className="bg-black text-white p-2 rounded-lg">
-              <BrainCircuitIcon />
+    <div className="w-full">
+      <Card className="w-full p-6 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white relative overflow-hidden shadow-xl">
+        {/* Vercel Mesh Gradient Top Hairline */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080]" />
+
+        <CardHeader className="flex items-center justify-center gap-3 mb-4 p-0 pt-2">
+          <CardTitle className="text-lg font-semibold flex items-center justify-center gap-2">
+            <div className="p-1 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
+              <img
+                src="/icon.png"
+                alt="Interview.AI Logo"
+                className="w-6 h-6 object-contain"
+              />
+            </div>
+            <span className="font-semibold text-base tracking-tight text-slate-900 dark:text-white font-sans">
+              Interview<span className="text-slate-400 dark:text-zinc-500 font-mono text-xs">.ai</span>
             </span>
-            <h2 className="font-semibold text-lg">Interview.AI</h2>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-lg md:text-xl font-semibold text-center leading-snug mb-4">
-            Continue with{" "}
-            <span className=" px-3 py-1 rounded-full inline-flex items-center gap-2">
-              <SparklesIcon size={16} />
-              AI Smart Interview
+
+        <CardContent className="p-0">
+          <div className="text-center mb-6">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-mono tracking-tight text-[#007cf0] rounded-full mb-2">
+              <SparklesIcon size={12} />
+              <span>authentication // required</span>
             </span>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
+              Sign in to begin session.
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal mt-1.5 leading-relaxed font-sans">
+              Sign in to initiate AI-powered mock interviews, track performance, and generate evaluation reports.
+            </p>
           </div>
-          <p className="text-gray-500 text-center text-sm md:text-base leading-relaxed mb-8">
-            Sign in to start AI-powered mock interviews, track progress and
-            unlock detailed performance insights
-          </p>
+
           <motion.button
-            whileHover={{ scale: 1.02, opacity: 0.9 }}
-            whileTap={{ scale: 0.98, opacity: 1 }}
-            className="w-full rounded-full flex items-center justify-center gap-3 bg-black text-white py-3 shadow-md"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            className="w-full rounded-full flex items-center justify-center gap-3 bg-[#171717] dark:bg-white text-white dark:text-black py-3 px-4 font-medium text-xs tracking-tight hover:bg-black dark:hover:bg-zinc-200 transition-all cursor-pointer shadow-md font-sans"
             onClick={handleGoogleAuth}
           >
-            <FcGoogle size={20} />
-            Continue with Google
+            <FcGoogle size={18} />
+            <span>Continue with Google</span>
           </motion.button>
         </CardContent>
       </Card>

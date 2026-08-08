@@ -1,8 +1,9 @@
-import { useNavigate } from "react-router";
-import { BrainCircuitIcon, CircleDollarSignIcon } from "lucide-react";
-import { useAtom } from "jotai";
-import { userAtom } from "@/jotai/atoms";
-import { motion } from "motion/react";
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { CircleDollarSignIcon, HistoryIcon, LogOutIcon } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
 import { Avatar, AvatarBadge, AvatarImage } from "@interview.ai/ui/avatar";
 import {
@@ -13,111 +14,180 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@interview.ai/ui/dropdown-menu";
-import { useLogout } from "@interview.ai/query";
+import { signOut } from "@interview.ai/better-auth/client";
+import { useSession } from "@interview.ai/better-auth/client";
+import { trpc } from "@interview.ai/api/client";
+import { ThemeToggle } from "../theme-toggle";
+
+const CandidateCredits = () => {
+  const router = useRouter();
+  const { data: candidate } = trpc.candidate.getCandidate.useQuery();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 bg-slate-100 dark:bg-zinc-900/90 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full text-xs font-mono tracking-tight hover:border-slate-300 dark:hover:border-zinc-700 cursor-pointer transition-all text-slate-800 dark:text-zinc-200">
+          <CircleDollarSignIcon size={14} className="text-amber-500 dark:text-amber-400" />
+          <span>Credits: {candidate?.credits ?? 0}</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-72 mt-2 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-200 rounded-lg shadow-xl">
+        <div className="flex flex-col items-center gap-3 p-4 text-center">
+          <p className="text-xs text-slate-500 dark:text-zinc-400">
+            Need additional practice credits to continue AI assessments?
+          </p>
+          <Button
+            className="w-full bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-xs rounded-full hover:bg-black dark:hover:bg-zinc-200"
+            onClick={() => router.push("/pricing")}
+          >
+            Get More Credits
+          </Button>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export const Navbar = () => {
-  const [user, setUser] = useAtom(userAtom);
-  const navigate = useNavigate();
-  const { mutateAsync } = useLogout();
+  const [mounted, setMounted] = useState(false);
+  const { data: session, isPending } = useSession();
+  const user = session?.user;
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     try {
-      await mutateAsync();
-      setUser(null);
-      navigate("/");
+      await signOut();
+      router.push("/");
     } catch (error) {
       console.log(error);
     }
   };
+
+  const navLinks = [
+    { label: "Home", path: "/" },
+    { label: "About", path: "/about" },
+    { label: "Contact", path: "/contact" },
+    { label: "Privacy", path: "/privacy" },
+    { label: "Terms", path: "/terms" },
+  ];
+
   return (
-    <div className="flex items-center justify-center px-4 pt-6 bg-[#F3F3F3]">
-      <motion.div
-        initial={{ opacity: 0.8, y: -40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ease: "easeOut" }}
-        className="w-full max-w-6xl bg-white rounded-[24px] shadow-sm border border-gray-200 px-8 py-4 flex justify-between items-center relative"
-      >
-        <div className="flex items-center gap-3">
-          <div className="bg-black text-white p-2 rounded-lg">
-            <BrainCircuitIcon size={20} />
+    <div className="sticky top-0 z-50 w-full bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 transition-colors">
+      {/* Vercel Mesh Gradient Top Hairline */}
+      <div className="h-[2px] w-full bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080]" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        {/* Brand Logo & Name */}
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 cursor-pointer group"
+        >
+          <div className="p-1 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 group-hover:border-slate-300 dark:group-hover:border-zinc-700 transition-colors">
+            <img
+              src="/icon.png"
+              alt="Interview.AI Logo"
+              className="w-6 h-6 object-contain"
+            />
           </div>
-          <h2 className="font-semibold text-lg hidden sm:block">
-            Interview.AI
+          <h2 className="font-semibold text-sm sm:text-base tracking-tight text-slate-900 dark:text-white font-sans">
+            Interview<span className="text-slate-400 dark:text-zinc-500 font-mono text-xs ml-0.5">.ai</span>
           </h2>
+        </Link>
+
+        {/* Middle Navigation Links (Next.js App Router Links) */}
+        <div className="hidden md:flex items-center gap-1 bg-slate-100/70 dark:bg-zinc-900/60 p-1 rounded-full border border-slate-200/80 dark:border-zinc-800/80">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.path;
+            return (
+              <Link
+                key={link.path}
+                href={link.path}
+                className={`px-3 py-1 text-xs font-sans rounded-full transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold shadow-xs"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-6">
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200 cursor-pointer transition-all ">
-                <CircleDollarSignIcon size={18} />
-                <p>{user ? user.credits : 0}</p>
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-72 mt-3 -ml-12">
-              <div className="flex flex-col items-center gap-4 p-4">
-                <p className="text-sm text-muted-foreground">
-                  Need more credits to continue interviews ?
-                </p>
-                <Button className="w-full" onClick={() => navigate("/pricing")}>
-                  Buy Credits
+        {/* Right Section Controls */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Theme Toggle Button */}
+          <ThemeToggle />
+
+          {/* Credits Badge - rendered only after client mount */}
+          {mounted && user && <CandidateCredits />}
+
+          {/* User Profile / Login Action */}
+          {isPending ? (
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-zinc-800 animate-pulse shrink-0" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 cursor-pointer w-8 h-8"
+                >
+                  <Avatar className="w-7 h-7">
+                    <AvatarImage
+                      src={user.image || ""}
+                      alt={user.name || "User Profile"}
+                      referrerPolicy="no-referrer"
+                    />
+                    <AvatarBadge className="bg-emerald-500" />
+                  </Avatar>
                 </Button>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {user ? (
-            <>
-              <div className="flex items-center gap-2 pr-6 rounded-full cursor-pointer">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full cursor-pointer"
-                    >
-                      <Avatar>
-                        <AvatarImage
-                          src={user.photoUrl || ""}
-                          alt={user.name}
-                          referrerPolicy="no-referrer"
-                        />
-                        <AvatarBadge className="bg-green-600 dark:bg-green-800" />
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-40 mt-3 -ml-12">
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem className="cursor-pointer">
-                        Profile
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer">
-                        Interview History
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem
-                        onClick={handleLogout}
-                        variant="destructive"
-                        className="cursor-pointer"
-                      >
-                        Log out
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 mt-2 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-200 rounded-lg shadow-xl">
+                <div className="px-3 py-2.5 border-b border-slate-200 dark:border-zinc-800/80">
+                  <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate font-mono">
+                    {user.email}
+                  </p>
+                </div>
+                <DropdownMenuGroup className="p-1">
+                  <DropdownMenuItem
+                    onClick={() => router.push("/history")}
+                    className="cursor-pointer text-xs font-medium text-slate-700 dark:text-zinc-300 focus:bg-slate-100 dark:focus:bg-zinc-900 focus:text-slate-900 dark:focus:text-white rounded-md flex items-center gap-2"
+                  >
+                    <HistoryIcon size={14} />
+                    <span>Interview History</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-slate-200 dark:bg-zinc-800" />
+                <DropdownMenuGroup className="p-1">
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="cursor-pointer text-xs font-medium text-rose-600 dark:text-rose-400 focus:bg-rose-50 dark:focus:bg-rose-950/40 focus:text-rose-700 dark:focus:text-rose-300 rounded-md flex items-center gap-2"
+                  >
+                    <LogOutIcon size={14} />
+                    <span>Log Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button
-              onClick={() => navigate("/auth")}
-              className="px-4 py-2 rounded-lg bg-black text-white hover:opacity-90 text-sm font-medium"
+              onClick={() => router.push("/auth")}
+              className="px-4 py-1.5 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 text-xs font-medium tracking-tight cursor-pointer transition-all shadow-sm"
             >
-              Login
+              Sign In
             </Button>
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
