@@ -12,10 +12,10 @@ The backend is organized as a high-performance Express 5 server powered by the B
 flowchart TD
     subgraph Ingress["Server Entry (apps/server/src/index.ts)"]
         EXPRESS["Express 5 App (Bun Runtime)"]
-        CORS["CORS Policy (Origin whitelist)"]
+        CORS["CORS Policy (Origin Whitelist)"]
         HELMET["Helmet (Security Headers)"]
         COOKIES["Cookie Parser"]
-        MULTER["Multer Middleware (Uploads & Audio)"]
+        MULTER["Multer Middleware (Uploads and Audio)"]
     end
 
     subgraph Handlers["Endpoint Routers"]
@@ -47,7 +47,10 @@ flowchart TD
         POSTGRES["PostgreSQL Database (Neon)"]
     end
 
-    EXPRESS --> CORS --> HELMET --> COOKIES --> MULTER
+    EXPRESS --> CORS
+    CORS --> HELMET
+    HELMET --> COOKIES
+    COOKIES --> MULTER
     COOKIES --> AUTH_ROUTER
     COOKIES --> TRPC_ROUTER
 
@@ -58,17 +61,19 @@ flowchart TD
     TRPC_App --> R_ROUTER
     TRPC_App --> COMP_ROUTER
 
-    P_ROUTER --- M_CANDIDATE
-    R_ROUTER --- M_CANDIDATE
-    COMP_ROUTER --- M_RECRUITER
-    COMP_ROUTER --- M_OWNER
+    P_ROUTER -.-> M_CANDIDATE
+    R_ROUTER -.-> M_CANDIDATE
+    COMP_ROUTER -.-> M_RECRUITER
+    COMP_ROUTER -.-> M_OWNER
 
     TRPC_App --> AI_SVC
     TRPC_App --> DB_SVC
     AUTH_ROUTER --> DB_SVC
 
-    AI_SVC <-->|Vercel AI SDK| GEMINI
-    DB_SVC <-->|SQL Queries (Pooler)| POSTGRES
+    AI_SVC -->|Prompt and Schema| GEMINI
+    GEMINI -->|Structured JSON| AI_SVC
+    DB_SVC -->|SQL Queries| POSTGRES
+    POSTGRES -->|Data Rows| DB_SVC
 ```
 
 ---

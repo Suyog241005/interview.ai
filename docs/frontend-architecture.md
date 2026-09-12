@@ -30,21 +30,28 @@ flowchart TD
     UI_System --> RW["apps/recruiter-web (:5174)"]
 
     subgraph Candidate_Features["apps/candidate-web"]
-        C_SETUP["Step 1: Resume Upload (Cloudinary) & AI Parse"]
+        C_SETUP["Step 1: Resume Upload (Cloudinary) and AI Parse"]
         C_LIVE["Step 2: Voice Interview Cockpit (Speech APIs)"]
-        C_REPORT["Step 3: AI Diagnostic Feedback & History"]
+        C_REPORT["Step 3: AI Diagnostic Feedback and History"]
     end
 
     subgraph Recruiter_Features["apps/recruiter-web"]
-        R_COMPANY["Company Profile & Team Invites"]
+        R_COMPANY["Company Profile and Team Invites"]
         R_JOBS["Job Opening Management"]
-        R_CONFIG["Interview Question Templates & AI Generator"]
+        R_CONFIG["Interview Question Templates and AI Generator"]
         R_INVITE["Candidate Invitation Engine"]
         R_EVAL["Candidate Response Analytics"]
     end
 
-    CW --- Candidate_Features
-    RW --- Recruiter_Features
+    CW --> C_SETUP
+    CW --> C_LIVE
+    CW --> C_REPORT
+
+    RW --> R_COMPANY
+    RW --> R_JOBS
+    RW --> R_CONFIG
+    RW --> R_INVITE
+    RW --> R_EVAL
 ```
 
 ---

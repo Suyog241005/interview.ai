@@ -28,17 +28,21 @@ flowchart TB
     GW -->|Route Selection| CW
     GW -->|Route Selection| RW
 
-    CW <-->|tRPC / Better Auth| SRV
-    RW <-->|tRPC / Better Auth| SRV
+    CW -->|tRPC and Better Auth| SRV
+    SRV -->|Response and Session| CW
+    RW -->|tRPC and Better Auth| SRV
+    SRV -->|Response and Session| RW
 
-    CW <-->|Speech Input / Audio Output| SPEECH
+    CW -->|Speech Recognition| SPEECH
+    SPEECH -->|Audio Synthesis| CW
 
     SRV --> AUTH
     SRV --> TRPC
     TRPC --> AISVC
     TRPC --> PG
     AUTH --> PG
-    AISVC <-->|Prompt / JSON Schema| GEMINI
+    AISVC -->|Prompt and Schema| GEMINI
+    GEMINI -->|Structured JSON| AISVC
 ```
 
 ---
