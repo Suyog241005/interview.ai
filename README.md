@@ -63,7 +63,12 @@ For full details, consult the modular documentation in the [`docs/`](./docs) dir
 - 🔄 [**Workflows & User Journeys**](./docs/workflows.md) — Step-by-step Candidate and Recruiter sequences with Mermaid diagrams.
 - 🖥️ [**Frontend Architecture**](./docs/frontend-architecture.md) — Next.js 15 App Router, UI design system, and Web Speech API.
 - ⚙️ [**Backend Architecture**](./docs/backend-architecture.md) — Express 5 on Bun, tRPC v11, Better Auth, and Gemini AI services.
+- 📋 [**API Reference & Procedures**](./docs/api-reference.md) — Complete catalog of all tRPC procedures, inputs, outputs, and middleware.
+- 🧠 [**AI Engineering & Prompts**](./docs/ai-engineering.md) — Google Gemini 2.5 Flash prompts, multimodal schemas, and evaluation rubrics.
+- 🗄️ [**Database Schema Reference**](./docs/database-schema.md) — Exhaustive specification of all 18 PostgreSQL Prisma models and enums.
+- 🔑 [**Environment Variables Guide**](./docs/environment-variables.md) — Dictionary of all development and production environment variables.
 - 📦 [**Packages & Workspaces**](./docs/packages.md) — Monorepo layout, dependency graphs, and script orchestration.
+- 🚦 [**Implementation Status & Roadmap**](./docs/roadmap-and-gaps.md) — Operational status matrix, ready backend endpoints, and upcoming phases.
 - 🎨 [**Design System Specification**](./DESIGN.md) — Complete tokens, typography (Geist), colors, and component styles.
 
 ---
@@ -91,7 +96,7 @@ GOOGLE_GENERATIVE_AI_API_KEY="your-gemini-api-key"
 
 # Better Auth Secret & Base URLs
 BETTER_AUTH_SECRET="your-secure-random-secret"
-BETTER_AUTH_URL="http://localhost:8000"
+BETTER_AUTH_URL="http://localhost:3001"
 CLIENT_URL="http://localhost:5173"
 ```
 

@@ -116,12 +116,20 @@ flowchart TD
 
 ### 5. `@interview.ai/ui` (`packages/ui`)
 - **Role**: Shared UI component library adhering to `DESIGN.md`.
-- **Key Components**:
-  - Buttons (`button-primary`, `button-secondary`, `button-primary-sm`).
-  - Form inputs (`form-input`, `form-input-sm`, `form-input-lg`).
-  - Cards (`card-marketing`, `card-soft`, `pricing-card`).
-  - Dialogs, Popovers, Dropdowns, Badges, and Navigation bars.
-  - Styled with Tailwind CSS v4 and Radix UI primitives.
+- **Export Mapping**:
+  ```json
+  "exports": {
+    "./*": "./src/components/ui/*.tsx",
+    "./components/*": "./src/components/*.tsx",
+    "./lib/*": "./src/lib/*.ts",
+    "./global.css": "./src/styles/global.css"
+  }
+  ```
+  Enables clean direct imports across apps: `import { Button } from "@interview.ai/ui/button"`, `import { Card } from "@interview.ai/ui/card"`, etc.
+- **Component Primitives**:
+  - `avatar.tsx`, `badge.tsx`, `button.tsx`, `card.tsx`, `dialog.tsx`, `dropdown-menu.tsx`, `field.tsx`, `input.tsx`, `label.tsx`, `select.tsx`, `separator.tsx`.
+  - Built with Radix UI, Tailwind CSS v4, Lucide icons, and `class-variance-authority` (cva).
+
 
 ---
 

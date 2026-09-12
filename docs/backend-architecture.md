@@ -6,15 +6,16 @@ This document covers the unified backend engine of **Interview.AI** (`apps/serve
 
 ## 🛠️ Architecture Overview
 
-The backend is organized as a single high-performance Express 5 server powered by the Bun runtime. It serves both the **Candidate** and **Recruiter** frontends through a unified tRPC v11 API layer and Better Auth authentication system.
+The backend is organized as a high-performance Express 5 server powered by the Bun runtime. It serves both the **Candidate** and **Recruiter** frontends through a unified tRPC v11 API layer and Better Auth authentication system.
 
 ```mermaid
 flowchart TD
     subgraph Ingress["Server Entry (apps/server/src/index.ts)"]
-        EXPRESS["Express 5 App"]
+        EXPRESS["Express 5 App (Bun Runtime)"]
         CORS["CORS Policy (Origin whitelist)"]
         HELMET["Helmet (Security Headers)"]
         COOKIES["Cookie Parser"]
+        MULTER["Multer Middleware (Uploads & Audio)"]
     end
 
     subgraph Handlers["Endpoint Routers"]
@@ -30,6 +31,12 @@ flowchart TD
         COMP_ROUTER["companyRouter (Jobs, Invites, Questions)"]
     end
 
+    subgraph Middleware["Custom Authorization Middleware"]
+        M_CANDIDATE["protectedCandidateProcedure"]
+        M_RECRUITER["protectedRecruiterProcedure"]
+        M_OWNER["protectedCompanyOwnerProcedure"]
+    end
+
     subgraph Services["Core Backend Services"]
         AI_SVC["AI Orchestration Service<br/>(ai.service.ts)"]
         DB_SVC["Prisma Client v7<br/>(packages/db)"]
@@ -37,10 +44,10 @@ flowchart TD
 
     subgraph Cloud["External Infrastructure"]
         GEMINI["Google Gemini 2.5 Flash"]
-        POSTGRES["PostgreSQL Database"]
+        POSTGRES["PostgreSQL Database (Neon)"]
     end
 
-    EXPRESS --> CORS --> HELMET --> COOKIES
+    EXPRESS --> CORS --> HELMET --> COOKIES --> MULTER
     COOKIES --> AUTH_ROUTER
     COOKIES --> TRPC_ROUTER
 
@@ -51,12 +58,17 @@ flowchart TD
     TRPC_App --> R_ROUTER
     TRPC_App --> COMP_ROUTER
 
+    P_ROUTER --- M_CANDIDATE
+    R_ROUTER --- M_CANDIDATE
+    COMP_ROUTER --- M_RECRUITER
+    COMP_ROUTER --- M_OWNER
+
     TRPC_App --> AI_SVC
     TRPC_App --> DB_SVC
     AUTH_ROUTER --> DB_SVC
 
     AI_SVC <-->|Vercel AI SDK| GEMINI
-    DB_SVC <-->|SQL Queries| POSTGRES
+    DB_SVC <-->|SQL Queries (Pooler)| POSTGRES
 ```
 
 ---
@@ -68,10 +80,11 @@ flowchart TD
 | **Runtime** | Bun | Latest | Fast execution, built-in bundling, TS transpilation |
 | **HTTP Server** | Express | 5.2.1 | Lightweight, flexible HTTP request handling |
 | **Security & Middleware** | Helmet, CORS, Morgan | Latest | HTTP security headers, CORS origin controls, logging |
+| **File/Audio Ingress** | Multer | 2.1.1 | Disk storage for resumes (<5MB) and audio recordings (<15MB) |
 | **API Layer** | tRPC Server | 11.18.0 | End-to-end typesafe RPC router without code generation |
 | **Authentication** | Better Auth | 1.6.23 | Modern session/token authentication with Prisma adapter |
 | **ORM** | Prisma | 7.8.0 | Schema modeling, migrations, and typesafe SQL query builder |
-| **Database** | PostgreSQL | 15+ | Relational data persistence |
+| **Database** | PostgreSQL on Neon | 15+ | Relational data persistence with serverless connection pooling |
 | **AI LLM Client** | Vercel AI SDK + Google Provider | `ai@^6.0.202`, `@ai-sdk/google@^3.0.81` | Schema-driven structured LLM invocation with Gemini 2.5 Flash |
 | **Schema Validation** | Zod | 4.4.3 | Runtime validation for tRPC inputs and AI outputs |
 
@@ -81,90 +94,69 @@ flowchart TD
 
 Better Auth handles multi-role authentication for candidates and recruiters.
 
-### Integration
-- **Server Hook**: Mounted in Express at `/api/auth/*splat` using `toNodeHandler(auth)`.
-- **Database Adapter**: Backed by `@better-auth/prisma-adapter` managing `User`, `Account`, `Session`, and `Verification` tables.
-- **Session Resolution**: In `createTRPCContext` (`packages/api/src/trpc.ts`), cookies and headers are inspected to resolve the active user and session before executing procedures.
-
-```mermaid
-sequenceDiagram
-    participant Client as Frontend Client
-    participant Express as Express Server (:8000)
-    participant Auth as Better Auth Handler
-    participant TRPC as tRPC Context
-    participant DB as PostgreSQL
-
-    Client->>Express: POST /api/auth/sign-in/email
-    Express->>Auth: toNodeHandler(auth)
-    Auth->>DB: Verify credentials & create Session
-    Auth-->>Client: Set HttpOnly Session Cookie
-
-    Client->>Express: POST /trpc/practice.getPracticeInterview
-    Express->>TRPC: createTRPCContext(req, res)
-    TRPC->>Auth: auth.api.getSession({ headers: req.headers })
-    Auth-->>TRPC: Return User & Session
-    TRPC->>DB: Execute protected query with ctx.user.id
-    TRPC-->>Client: Typed JSON Response
+### Server Configuration (`packages/better-auth/server/index.ts`)
+```typescript
+export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET,
+  database: prismaAdapter(prisma, { provider: "postgresql" }),
+  baseURL: authUrl,
+  trustedOrigins: [
+    clientUrl,
+    "https://candidate.yourdomain.com",
+    "http://localhost:5173",
+    "http://localhost:5174",
+  ].filter(Boolean),
+  advanced: {
+    disableCSRFCheck: true, // Enables cross-origin requests between Next.js frontends and Express
+    defaultCookieAttributes: {
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+    },
+  },
+  account: { storeStateStrategy: "database" },
+  emailAndPassword: { enabled: true },
+  socialProviders: {
+    github: { clientId: process.env.GITHUB_CLIENT_ID, clientSecret: process.env.GITHUB_CLIENT_SECRET },
+    google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET },
+  },
+});
 ```
+
+### Session Resolution in tRPC
+In `packages/api/src/trpc.ts`, `createTRPCContext` extracts incoming request headers and calls `auth.api.getSession({ headers: fromNodeHeaders(req.headers) })`.
+- `protectedProcedure`: Validates session existence, attaching `ctx.userId` and `ctx.session`.
+- `protectedCandidateProcedure`: Queries `Candidate` matching `userId` and injects `ctx.candidateId`.
+- `protectedRecruiterProcedure`: Queries `Recruiter` matching `userId` and injects `ctx.recruiterId` and `ctx.companyId`.
+- `protectedCompanyOwnerProcedure`: Verifies user is the `ownerId` of the `Company` and injects `ctx.companyId`.
 
 ---
 
-## 🗄️ Database Schema & Data Modeling (`packages/db`)
+## 📁 Multer Middleware (`apps/server/src/middleware/multer.middleware.ts`)
 
-The database consists of 18 relational models partitioned into four logical domains:
+Configured with two disk storage instances writing to `./public`:
+1. **`upload`**: Standard document uploader capped at **5MB** for PDF resumes.
+2. **`uploadAudio`**: Dedicated audio recording uploader capped at **15MB** supporting `.webm`, `.ogg`, and `.mp3` mimetypes. Supports long vocal answers.
 
-```mermaid
-erDiagram
-    User ||--o| Candidate : "is"
-    User ||--o| Recruiter : "is"
-    User ||--o| Company : "owns"
-    User ||--o{ Session : "has"
-    User ||--o{ Account : "has"
+---
 
-    Candidate ||--o{ Resume : "uploads"
-    Candidate ||--o{ PracticeInterview : "takes"
-    Candidate ||--o{ CompanyInterview : "participates"
-    Candidate ||--o{ Invitation : "receives"
+## 🎟️ Invitation Token Generation Algorithm
 
-    Resume ||--o| ResumeAnalysis : "analyzed_into"
-
-    PracticeInterview ||--o{ PracticeQuestion : "contains"
-    PracticeInterview ||--o| PracticeInterviewReport : "generates"
-
-    Company ||--o{ Recruiter : "employs"
-    Company ||--o{ RecruiterInvitation : "invites"
-    Company ||--o{ Job : "posts"
-
-    Job ||--o| InterviewConfig : "configured_with"
-    Job ||--o{ JobRecruiter : "managed_by"
-    Job ||--o{ Invitation : "issues"
-    Job ||--o{ CompanyInterview : "conducts"
-
-    CompanyInterview ||--o{ CompanyQuestion : "contains"
-    CompanyInterview ||--o| CompanyInterviewReport : "generates"
+Company and recruiter invitations use a cryptographically secure, human-readable random string generator (`packages/api/src/utils/invite-token.ts`):
+```typescript
+export function generateInviteCode(length = 12): string {
+  // Uses Crockford Base32 alphabet (omits 0, 1, I, L, O to eliminate visual ambiguity)
+  const chars = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  const byteArray = new Uint8Array(length);
+  getRandomValues(byteArray);
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars[byteArray[i] % chars.length];
+  }
+  return result;
+}
 ```
-
-### Core Schema Domains:
-1. **Auth & Identity**: `User`, `Account`, `Session`, `Verification`.
-2. **Candidate Domain**:
-   - `Candidate`: Manages practice credits (default 100).
-   - `Resume`: Stores PDF metadata and download links.
-   - `ResumeAnalysis`: Structured extraction (skills array, projects JSON, education JSON, suggested roles, experience years).
-   - `PracticeInterview`: Tracks status (`PENDING`, `IN_PROGRESS`, `COMPLETED`), role, and mode (`TECHNICAL` vs. `HR`).
-   - `PracticeQuestion`: Questions with time limits, scores, user transcripts, and AI feedback.
-   - `PracticeInterviewReport`: Aggregate score, strengths, weaknesses, executive summary, and recommendations.
-3. **Company & Recruiter Domain**:
-   - `Company`: Credits (default 100), brand details, and owner reference.
-   - `Recruiter`: Staff member designation linked to Company.
-   - `RecruiterInvitation`: Tokens for adding colleagues to the hiring team.
-   - `Job`: Position requisites, experience bounds, and status (`DRAFT`, `OPEN`, `PAUSED`, `CLOSED`).
-   - `JobRecruiter`: Many-to-many relationship assigning recruiters to specific job openings.
-4. **Company Interview Assessment Domain**:
-   - `InterviewConfig`: Per-job configuration (question count, duration minutes, prompt overrides).
-   - `Invitation`: Secure tokenized candidate interview invite with expiration date.
-   - `CompanyInterview`: Scheduled assessment lifecycle.
-   - `CompanyQuestion`: Real-time candidate answers, category tags, and question scores.
-   - `CompanyInterviewReport`: Candidate hiring recommendation, score breakdown, and evaluation summary.
+- **Recruiter Invites**: Length 12, expires in 7 days (`now + 7d`).
+- **Candidate Invites**: Length 16, expires in 7 days (`now + 7d`).
 
 ---
 

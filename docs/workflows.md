@@ -1,6 +1,6 @@
 # High-Level Workflows & User Journeys
 
-This document illustrates the operational journeys of **Candidates**, **Recruiters**, and the underlying **AI Evaluation Loop**.
+This document illustrates the operational journeys of **Candidates**, **Recruiters**, and the underlying **AI Evaluation Loop**, capturing all technical steps, storage pipelines, and timer behaviors.
 
 ---
 
@@ -13,108 +13,131 @@ sequenceDiagram
     autonumber
     actor Candidate
     participant CW as Candidate Web (:5173)
-    participant SRV as Server & tRPC (:8000)
+    participant CLOUD as Cloudinary CDN
+    participant SRV as Express Server & tRPC (:3001)
     participant AI as Gemini 2.5 Flash
-    participant DB as PostgreSQL (Prisma)
+    participant DB as PostgreSQL (Neon)
 
-    Candidate->>CW: 1. Sign In (Better Auth)
-    CW->>SRV: Authenticate session
+    Candidate->>CW: 1. Sign In (Google OAuth / Email via Better Auth)
+    CW->>SRV: Authenticate session cookie
     SRV->>DB: Fetch/Create Candidate record (Credits: 100)
 
-    Candidate->>CW: 2. Upload Resume (PDF)
-    CW->>SRV: Upload file buffer (tRPC: resume.analyze)
-    SRV->>AI: Send PDF buffer to Gemini (analyzeResume)
-    AI-->>SRV: Structured JSON (skills, experience, projects)
-    SRV->>DB: Save Resume & ResumeAnalysis
+    Candidate->>CW: 2. Upload Resume (PDF < 5MB)
+    CW->>CLOUD: POST to api.cloudinary.com with upload_preset 'interview-ai'
+    CLOUD-->>CW: Return secure_url
+    CW->>SRV: tRPC: resume.createResume (fileName, secure_url)
+    SRV->>DB: Insert Resume row
+    CW->>SRV: tRPC: resume.analyzeResume (resumeId)
+    SRV->>CLOUD: Download PDF buffer
+    SRV->>AI: Send PDF buffer to Gemini (analyzeResume via Vercel AI SDK)
+    AI-->>SRV: Structured JSON (name, skills, projects, experienceyears, education, summary)
+    SRV->>DB: Insert ResumeAnalysis row linked to Resume
+    SRV-->>CW: Return extracted candidate data (pre-populates form)
 
-    Candidate->>CW: 3. Configure Practice Session (Role, Track: TECH/HR, Exp)
-    CW->>SRV: Request Question Generation (tRPC: practice.createPracticeInterview)
-    SRV->>AI: generatePracticeInterviewQuestions (Resume context + Role prompt)
-    AI-->>SRV: 5 Structured Questions (Easy -> Hard)
-    SRV->>DB: Create PracticeInterview & 5 PracticeQuestions
+    Candidate->>CW: 3. Configure Practice Session (Role, Track: TECH/HR, Experience Years)
+    CW->>SRV: tRPC: practice.createPracticeInterview (role, mode, exp, resumeId)
+    SRV->>DB: Insert PracticeInterview (Status: PENDING)
+    CW->>SRV: tRPC: practice.createPracticeInterviewQuestions (practiceinterviewId, resumeAnalysis, values)
+    SRV->>AI: generatePracticeInterviewQuestions (Resume analysis + Role prompt)
+    AI-->>SRV: 5 Structured Questions
+    Note over SRV,DB: Dynamic Timers Applied:<br/>EASY = 60s, MEDIUM = 90s, HARD = 120s
+    SRV->>DB: Insert 5 PracticeQuestion rows with calibrated timers
+    SRV-->>CW: Return practiceInterviewWithQuestions
 
-    Candidate->>CW: 4. Enter Live Cockpit
+    Candidate->>CW: 4. Click 'Start Interview'
+    CW->>SRV: tRPC: practice.startPracticeInterview (practiceinterviewId)
+    SRV->>DB: Update status = IN_PROGRESS
+
     loop For each Question (1 to 5)
-        CW->>CW: AI voice reads question (SpeechSynthesis)
-        CW->>CW: Candidate answers verbally (SpeechRecognition real-time transcript)
-        CW->>SRV: Submit Answer (tRPC: practice.submitAnswer)
-        SRV->>DB: Store userAnswer & timeTaken
+        CW->>CW: Audio synthesized aloud (SpeechSynthesis, rate 0.92, pitch 0.98)
+        CW->>CW: Female AI avatar loop video plays
+        CW->>CW: Radial timer counts down from question time limit
+        CW->>CW: Candidate speaks answer (SpeechRecognition captures continuous transcript)
+        Candidate->>CW: Clicks 'Submit Answer' (or timer expires)
+        CW->>SRV: tRPC: practice.submitAnswer (interviewId, questionId, userAnswer)
+        SRV->>DB: Store userAnswer & mark isAnswered = true
     end
 
-    CW->>SRV: 5. Finish Interview (tRPC: practice.generatePracticeInterviewReport)
-    SRV->>AI: generatePracticeInterviewReport (Questions + Answers)
-    AI-->>SRV: Overall Score, Strengths, Weaknesses, Recommendation
-    SRV->>DB: Save PracticeInterviewReport & update status to COMPLETED
-    CW->>Candidate: 6. Display Interactive Diagnostic Report
+    CW->>SRV: 5. Finalize Session: tRPC practice.generatePracticeInterviewReport
+    SRV->>AI: generatePracticeInterviewReport (all questions + candidate spoken answers)
+    AI-->>SRV: Overall Score, Strengths, Weaknesses, Summary, Recommendation
+    SRV->>DB: Create PracticeInterviewReport & set status = COMPLETED
+    SRV-->>CW: Return completed session with report
+    CW->>Candidate: 6. Display Interactive Diagnostic Evaluation Dashboard
 ```
-
-### Key Stages of Candidate Practice:
-1. **Resume Ingestion & Intelligence**:
-   - Resumes in PDF format are processed multimodal-style by Gemini 2.5 Flash.
-   - Outputs: Full contact summary, skills list, validated projects, work experience duration, and recommended roles.
-2. **5-Stage Curriculum Composition**:
-   - **Q1 (EASY)**: Introduction & Background Overview.
-   - **Q2 (EASY)**: Core Stack Competency (Tech) or Communication (HR).
-   - **Q3 (MEDIUM)**: Practical Project Deep Dive (Tech) or Behavioral Scenarios (HR).
-   - **Q4 (MEDIUM)**: Problem Solving & Troubleshooting (Tech) or Situational Judgment (HR).
-   - **Q5 (HARD)**: System Scalability & Architectural Tradeoffs (Tech) or Cultural Alignment (HR).
-3. **Cockpit Execution**:
-   - Circular countdown timer with per-question limits (default 60s).
-   - Speech synthesis for audio delivery paired with an AI video avatar.
-   - Live speech recognition capturing candidate transcripts in real time.
-4. **Diagnostic Feedback**:
-   - Overall score (0–100).
-   - Communication, Confidence, and Correctness sub-scores.
-   - Bulleted list of candidate strengths, specific weaknesses, and actionable recommendations.
 
 ---
 
-## 2. Recruiter Hiring Campaign Workflow
+## 2. Recruiter Team & Campaign Workflow
 
-Recruiters use `apps/recruiter-web` to streamline technical and behavioral candidate assessments.
+Recruiters use `apps/recruiter-web` to manage corporate profiles, coordinate team hiring, post job openings, and issue automated candidate assessments.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Recruiter
-    actor Candidate
+    actor Owner as Company Owner
+    actor Recruiter as Team Recruiter
+    participant RW as Recruiter Web (:5174)
+    participant SRV as Server & tRPC
+    participant DB as PostgreSQL
+
+    Note over Owner,DB: Phase A: Workspace Setup & Team Invites
+    Owner->>RW: 1. Sign In & Create Company (name, website, logoUrl)
+    RW->>SRV: tRPC: company.createCompany
+    SRV->>DB: Transaction: Create Company & assign Owner as first Recruiter
+
+    Owner->>RW: 2. Invite Colleague (email)
+    RW->>SRV: tRPC: company.inviteRecruiter
+    SRV->>SRV: Generate 12-char Crockford base32 token (7-day expiry)
+    SRV->>DB: Insert RecruiterInvitation (Status: PENDING)
+
+    Recruiter->>RW: 3. Receives Token & Clicks Acceptance Link
+    Recruiter->>RW: Signs In with invited email
+    RW->>SRV: tRPC: recruiterAuth.acceptInvitation (token)
+    SRV->>SRV: Verify token validity & match email with session
+    SRV->>DB: Transaction: Create Recruiter profile & update status = ACCEPTED
+```
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Recruiter as Recruiter
+    actor Candidate as Job Candidate
     participant RW as Recruiter Web (:5174)
     participant CW as Candidate Web (:5173)
     participant SRV as Server & tRPC
     participant AI as Gemini 2.5 Flash
     participant DB as PostgreSQL
 
-    Recruiter->>RW: 1. Sign Up & Setup Company (Better Auth)
-    RW->>SRV: tRPC: company.createCompany
-    SRV->>DB: Create Company & Recruiter record
-
-    Recruiter->>RW: 2. Invite Team Recruiters (Optional)
-    RW->>SRV: tRPC: company.inviteRecruiter
-    SRV->>DB: Generate RecruiterInvitation token
-
-    Recruiter->>RW: 3. Create Job Opening (Title, Description, Experience)
+    Note over Recruiter,DB: Phase B: Job Campaign & Interview Configuration
+    Recruiter->>RW: 1. Create Job Opening (Title, Description, Experience, Status: OPEN)
     RW->>SRV: tRPC: company.createJob
-    SRV->>DB: Create Job (Status: DRAFT/OPEN)
+    SRV->>DB: Transaction: Create Job & assign Recruiter to JobRecruiter
 
-    Recruiter->>RW: 4. Configure Interview Parameters
-    RW->>SRV: tRPC: company.createInterviewConfig (Question Count, Mode, Prompts)
-    SRV->>AI: generateCompanyInterviewQuestions
-    AI-->>SRV: Auto-generated tailored questions
-    SRV->>DB: Save InterviewConfig & CompanyQuestions
+    Recruiter->>RW: 2. Configure Interview (Duration: 30m, Count: 5, Track: TECH, Custom Prompt)
+    RW->>SRV: tRPC: company.upsertInterviewConfig
+    SRV->>DB: Upsert InterviewConfig for Job
 
-    Recruiter->>RW: 5. Invite Candidate (Email, Name)
+    Recruiter->>RW: 3. Trigger Question Generation (or manually add questions)
+    RW->>SRV: tRPC: company.generateAiQuestions (interviewId)
+    SRV->>AI: generateCompanyInterviewQuestions (Job title, description, exp, config prompt)
+    AI-->>SRV: Generated structured questions
+    SRV->>DB: Overwrite company questions with calibrated timers (60s / 90s / 120s)
+
+    Note over Recruiter,Candidate: Phase C: Candidate Invitation & Assessment
+    Recruiter->>RW: 4. Invite Candidate (candidateEmail, candidateName, jobId)
     RW->>SRV: tRPC: company.inviteCandidate
-    SRV->>DB: Generate Invitation record with unique token
+    SRV->>SRV: Generate 16-char invite token (7-day expiry)
+    SRV->>DB: Insert Invitation record
 
-    Candidate->>CW: 6. Clicks Assessment Link (Invitation Token)
-    CW->>SRV: Validate Token & load company questions
-    Candidate->>CW: 7. Complete Live AI Interview
-    CW->>SRV: Submit answers & generate CompanyInterviewReport
-    SRV->>DB: Persist CompanyInterview & Report
+    Candidate->>CW: 5. Candidate opens invitation link (/interview?token=xyz)
+    CW->>SRV: Validate Invitation & create CompanyInterview
+    Candidate->>CW: 6. Takes Live AI Voice Interview in Cockpit
+    CW->>SRV: Submits spoken answers & triggers CompanyInterviewReport
+    SRV->>DB: Save report & mark interview status = COMPLETED
 
-    Recruiter->>RW: 8. Access Review Cockpit
-    RW->>SRV: tRPC: company.getJobInterviews & getInterviewReport
-    RW->>Recruiter: Inspect candidate transcripts, scores, strengths, weaknesses & recommendation
+    Recruiter->>RW: 7. Reviews Submissions: tRPC company.getCompanyInterviewById
+    RW->>Recruiter: Inspects candidate spoken transcript, scoring breakdown, and hiring recommendation
 ```
 
 ---

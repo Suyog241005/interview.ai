@@ -1,6 +1,6 @@
 # Frontend Architecture
 
-This document covers the frontend layer of **Interview.AI**, comprising three distinct Next.js applications and a shared UI component package.
+This document covers the frontend layer of **Interview.AI**, comprising three specialized Next.js applications and the shared UI component package.
 
 ---
 
@@ -10,7 +10,7 @@ The frontend layer is structured as three specialized applications:
 
 ```
 apps/
-├── gateway/          # Route portal & landing page (Port 3000)
+├── gateway/          # Route portal & product landing page (Port 3000)
 ├── candidate-web/    # Candidate practice & assessment cockpit (Port 5173)
 └── recruiter-web/    # Recruiter campaigns & evaluation dashboard (Port 5174)
 ```
@@ -30,15 +30,15 @@ flowchart TD
     UI_System --> RW["apps/recruiter-web (:5174)"]
 
     subgraph Candidate_Features["apps/candidate-web"]
-        C_SETUP["Step 1: Resume Upload & Config"]
-        C_LIVE["Step 2: Voice Interview Cockpit"]
-        C_REPORT["Step 3: AI Diagnostic Feedback"]
+        C_SETUP["Step 1: Resume Upload (Cloudinary) & AI Parse"]
+        C_LIVE["Step 2: Voice Interview Cockpit (Speech APIs)"]
+        C_REPORT["Step 3: AI Diagnostic Feedback & History"]
     end
 
     subgraph Recruiter_Features["apps/recruiter-web"]
-        R_COMPANY["Company Profile & Team"]
+        R_COMPANY["Company Profile & Team Invites"]
         R_JOBS["Job Opening Management"]
-        R_CONFIG["Interview Question Templates"]
+        R_CONFIG["Interview Question Templates & AI Generator"]
         R_INVITE["Candidate Invitation Engine"]
         R_EVAL["Candidate Response Analytics"]
     end
@@ -61,11 +61,12 @@ flowchart TD
 | **Typography** | Geist & Geist Mono | 5.2.9 | Custom geometric sans display face and technical monospaced font |
 | **Animations** | Motion (Framer Motion) | 12.40.0 | Smooth micro-animations, transitions, and gesture controls |
 | **Data Fetching & Cache**| TanStack React Query | 5.101.2 | Declarative server-state caching, background revalidation, mutations |
-| **API Client** | tRPC React Query Client | 11.18.0 | Fully typed client for invoking backend tRPC procedures |
-| **Local State** | Jotai | 2.20.0 | Atomic, granular client-side state |
+| **API Client** | tRPC React Query Client | 11.18.0 | Fully typed client for invoking backend tRPC procedures with cookie credentials |
+| **Local State** | Jotai | 2.20.0 | Atomic, granular client-side state (`userAtom`) |
 | **Form Management** | React Hook Form + Zod | 7.79.0 | High-performance, schema-validated forms |
+| **File Storage** | Cloudinary Direct Upload | REST | Unsigned PDF resume upload via `uploadToCloudinary` |
 | **Audio/Voice** | Browser Web Speech API | Native | SpeechRecognition for STT and SpeechSynthesis for TTS |
-| **Countdown Timer** | React Countdown Circle Timer | 3.2.1 | Visual SVG radial countdown timer for question time limits |
+| **Countdown Timer** | React Countdown Circle Timer | 3.2.1 | Visual SVG radial countdown timer for calibrated question limits |
 
 ---
 
@@ -105,32 +106,72 @@ stateDiagram-v2
 ```
 
 ### 1. Step 1: Setup (`step-1-setup.tsx`)
-- Drag-and-drop resume upload (PDF) with automatic AI background parsing.
-- Configuration controls: Role Title, Experience (Years), Track (`TECHNICAL` vs. `HR`).
-- On start, invokes `trpc.practice.createPracticeInterview`.
+- Drag-and-drop resume upload (PDF < 5MB).
+- **Direct Cloudinary Upload**:
+  ```typescript
+  // apps/candidate-web/src/lib/cloudinary.ts
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "interview-ai");
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  ```
+- **Automated Resume Analysis**: Calls `trpc.resume.createResume` followed by `trpc.resume.analyzeResume`. The AI response populates candidate profile data (Name, Experience, Core Skills, Projects, Education, Summary).
+- Candidate selects target Job Role, Experience Years, and Interview Track (`TECHNICAL` vs `HR`).
+- On submission, calls `trpc.practice.createPracticeInterview` and `trpc.practice.createPracticeInterviewQuestions`.
 
 ### 2. Step 2: Live Cockpit (`step-2-interview.tsx`)
-- **Radial Countdown Timer**: Visual countdown matching `timeLimitSeconds`.
-- **Speech Recognition**: Initializes `webkitSpeechRecognition` with continuous listening and interim results.
-- **Speech Synthesis**: Converts the question text to natural speech on mount.
-- **Avatar Looping Video**: Synced with audio playback to mimic an authentic interviewer.
-- **Answer Submission**: Candidate clicks "Submit Answer" or the countdown triggers automatic submission, invoking `trpc.practice.submitAnswer`.
+- **Speech Synthesis (TTS)**:
+  - Questions are verbalized aloud automatically upon question mount (`apps/candidate-web/src/lib/speech-synthesis.ts`):
+  ```typescript
+  const utterThis = new SpeechSynthesisUtterance(text);
+  utterThis.rate = 0.92;
+  utterThis.pitch = 0.98;
+  utterThis.volume = 1.0;
+  utterThis.lang = "en-US";
+  utterThis.voice = synth.getVoices()[182] || synth.getVoices()[0];
+  synth.speak(utterThis);
+  ```
+- **Speech Recognition (STT)**:
+  - Uses `window.webkitSpeechRecognition` or `window.SpeechRecognition`.
+  - Configured with `continuous = true`, `interimResults = true`, `lang = "en-US"`.
+  - Filters out harmless non-speech events (`no-speech`, `aborted`).
+  - Streams live transcript into local state and stores full answer in a reference.
+- **Dynamic Difficulty Timers**:
+  - `EASY`: 60 seconds
+  - `MEDIUM`: 90 seconds
+  - `HARD`: 120 seconds
+- **Video Avatar Synchronization**:
+  - A looped video (`female-ai.mp4`) plays in the background, simulating an authentic interviewer.
+- **Answer Submission**:
+  - Automatically submits when timer hits 0 or candidate clicks "Submit Answer", calling `trpc.practice.submitAnswer`.
 
-### 3. Step 3: Diagnostic Report (`step-3-report.tsx`)
-- Displays overall score alongside categorized performance bars (Correctness, Communication, Confidence).
-- Lists AI-generated strengths and weaknesses with targeted recommendations.
-- Interactive question-by-question review showing the exact spoken transcript and question metrics.
+### 3. Step 3: Diagnostic Evaluation Dashboard (`step-3-report.tsx`)
+- Displays overall score (0–100) from `PracticeInterviewReport.overallScore`.
+- Averages per-question sub-metrics: Correctness Score, Communication Score, Confidence Score.
+- Shows AI-curated Strengths list, Weaknesses list, and Actionable Recommendations.
+- Interactive question-by-question accordion showing the exact question prompt, candidate spoken transcript, and AI feedback.
+- Candidates can start a new interview or return to the landing page.
+
+### 4. Interview History (`apps/candidate-web/src/views/InterviewHistory.tsx`)
+- Fetches all historical sessions using `trpc.practice.getPracticeInterviewHistory.useQuery()`.
+- Renders past interviews with difficulty badges, timestamps, completion statuses, and expandable diagnostic feedback.
+
+### 5. Credits System & Navbar Counter
+- **Starter Credits**: Every new candidate receives 100 starter credits upon account initialization via `candidateAuth.becomeCandidate`.
+- **Live Credit Badge**: The desktop and mobile navbar renders a dynamic `CandidateCredits` pill showing remaining balance (`Credits: {candidate?.credits ?? 0}`), with a contextual modal/popover prompting users to replenish credits.
 
 ---
 
-## 🏢 Recruiter Web Architecture (`recruiter-web`)
+## 🏢 Recruiter Web Status & Architecture (`recruiter-web`)
 
-Designed for corporate recruiting workflows:
-- **Company Profile**: Setup company name, website, and recruiter member access.
-- **Job Creation Suite**: Define job title, role descriptions, experience criteria, and status (`DRAFT`, `OPEN`, `PAUSED`, `CLOSED`).
-- **Interview Configurator**: Tailor question count, interview mode (`TECHNICAL` vs `HR`), time limits, and custom prompt directives.
-- **Candidate Invitation Manager**: Issue candidate invitations with time-decaying security tokens and track invitation statuses (`PENDING`, `ACCEPTED`, `REJECTED`, `EXPIRED`).
-- **Submissions & Analytics Cockpit**: Inspect candidate transcripts, listen to responses, review AI composite scores, and export candidate evaluations.
+- **Current Status**: Backend procedures (`packages/api/src/routers/company/*`) and database models (`Company`, `Job`, `InterviewConfig`, `Invitation`, `CompanyInterview`, `CompanyInterviewReport`) are **100% complete and operational**. The `recruiter-web` application currently houses the base App Router shell, theme providers, and authentication pages, with dedicated management dashboards currently under development.
+- **Planned Views**:
+  - `/dashboard`: High-level recruitment metrics and active job openings.
+  - `/jobs/new`: Creation wizard with AI question generation preview.
+  - `/interviews/[id]`: Review cockpit inspecting candidate transcripts, scoring charts, and hiring recommendations.
 
 ---
 
@@ -140,3 +181,31 @@ Acts as the root traffic router (Port `3000`):
 - Clean hero showcasing the dual value propositions:
   - **Candidates**: "Practice with an AI Interviewer and get hired." -> Directs to `http://localhost:5173`.
   - **Recruiters**: "Automate technical screening interviews at scale." -> Directs to `http://localhost:5174`.
+
+---
+
+## 🔀 Production Rewrites & Reverse Proxy (`vercel.json`)
+
+To eliminate cross-origin cookie restrictions and streamline deployment on Vercel, both `apps/candidate-web` and `apps/gateway` include a `vercel.json` rewrite configuration:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/api/auth/:path*",
+      "destination": "https://api.yourdomain.com/api/auth/:path*"
+    },
+    {
+      "source": "/trpc/:path*",
+      "destination": "https://api.yourdomain.com/trpc/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+This allows the client web apps to invoke `/api/auth/*` and `/trpc/*` as same-origin paths in production while Vercel reverse-proxies them to the backend API server.
+
