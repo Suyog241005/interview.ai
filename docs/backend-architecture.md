@@ -10,70 +10,50 @@ The backend is organized as a high-performance Express 5 server powered by the B
 
 ```mermaid
 flowchart TD
-    subgraph Ingress["Server Entry (apps/server/src/index.ts)"]
-        EXPRESS["Express 5 App (Bun Runtime)"]
-        CORS["CORS Policy (Origin Whitelist)"]
-        HELMET["Helmet (Security Headers)"]
-        COOKIES["Cookie Parser"]
-        MULTER["Multer Middleware (Uploads and Audio)"]
+    subgraph S1["1. HTTP Ingress (apps/server)"]
+        CLIENTS["Frontend Clients (:5173 / :5174 / :3000)"]
+        EXPRESS["Express 5 HTTP Server (:3001)<br/>CORS • Helmet • CookieParser • Multer"]
+        CLIENTS -->|HTTP Requests| EXPRESS
     end
 
-    subgraph Handlers["Endpoint Routers"]
+    subgraph S2["2. Protocol Handlers"]
         AUTH_ROUTER["Better Auth Handler<br/>/api/auth/*splat"]
         TRPC_ROUTER["tRPC Express Middleware<br/>/trpc/*"]
+        EXPRESS -->|Auth Endpoints| AUTH_ROUTER
+        EXPRESS -->|RPC Queries & Mutations| TRPC_ROUTER
     end
 
-    subgraph TRPC_App["tRPC v11 Router (packages/api)"]
-        C_AUTH["candidateAuthRouter"]
-        C_ROUTER["candidateRouter"]
-        P_ROUTER["practiceInterviewRouter"]
-        R_ROUTER["practiceResumeRouter"]
-        COMP_ROUTER["companyRouter (Jobs, Invites, Questions)"]
+    subgraph S3["3. tRPC Domain Routers (packages/api)"]
+        direction TB
+        R_AUTH["candidateAuth & recruiterAuth"]
+        R_PRACTICE["practice (Interview Cockpit)"]
+        R_RESUME["resume (PDF Upload & Parse)"]
+        R_COMPANY["company (Jobs, Invites, Questions)"]
+        TRPC_ROUTER --> R_AUTH
+        TRPC_ROUTER --> R_PRACTICE
+        TRPC_ROUTER --> R_RESUME
+        TRPC_ROUTER --> R_COMPANY
     end
 
-    subgraph Middleware["Custom Authorization Middleware"]
-        M_CANDIDATE["protectedCandidateProcedure"]
-        M_RECRUITER["protectedRecruiterProcedure"]
-        M_OWNER["protectedCompanyOwnerProcedure"]
+    subgraph S4["4. Core Services & Database"]
+        AI_SVC["AI Orchestration Service<br/>Vercel AI SDK • ai.service.ts"]
+        DB_SVC["Prisma Client ORM v7<br/>packages/db"]
+        AUTH_ROUTER --> DB_SVC
+        R_PRACTICE --> AI_SVC
+        R_RESUME --> AI_SVC
+        R_COMPANY --> AI_SVC
+        R_AUTH --> DB_SVC
+        R_PRACTICE --> DB_SVC
+        R_RESUME --> DB_SVC
+        R_COMPANY --> DB_SVC
     end
 
-    subgraph Services["Core Backend Services"]
-        AI_SVC["AI Orchestration Service<br/>(ai.service.ts)"]
-        DB_SVC["Prisma Client v7<br/>(packages/db)"]
-    end
-
-    subgraph Cloud["External Infrastructure"]
+    subgraph S5["5. External Infrastructure"]
         GEMINI["Google Gemini 2.5 Flash"]
         POSTGRES["PostgreSQL Database (Neon)"]
+        AI_SVC -->|Prompt & Schema| GEMINI
+        DB_SVC -->|SQL Queries| POSTGRES
     end
-
-    EXPRESS --> CORS
-    CORS --> HELMET
-    HELMET --> COOKIES
-    COOKIES --> MULTER
-    COOKIES --> AUTH_ROUTER
-    COOKIES --> TRPC_ROUTER
-
-    TRPC_ROUTER --> TRPC_App
-    TRPC_App --> C_AUTH
-    TRPC_App --> C_ROUTER
-    TRPC_App --> P_ROUTER
-    TRPC_App --> R_ROUTER
-    TRPC_App --> COMP_ROUTER
-
-    P_ROUTER -.-> M_CANDIDATE
-    R_ROUTER -.-> M_CANDIDATE
-    COMP_ROUTER -.-> M_RECRUITER
-    COMP_ROUTER -.-> M_OWNER
-
-    TRPC_App --> AI_SVC
-    TRPC_App --> DB_SVC
-    AUTH_ROUTER --> DB_SVC
-
-    AI_SVC -->|Prompt and Schema| GEMINI
-    GEMINI -->|Structured JSON| AI_SVC
-    DB_SVC -->|SQL Queries| POSTGRES
-    POSTGRES -->|Data Rows| DB_SVC
 ```
 
 ---

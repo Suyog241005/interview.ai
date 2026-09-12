@@ -5,44 +5,48 @@
 **Interview.AI** is built as a high-performance **TypeScript Monorepo** managed with Bun workspaces. It unites three specialized Next.js frontends with a unified backend server and shared domain packages.
 
 ```mermaid
-flowchart TB
-    subgraph Clients["Frontend Layer (Next.js 15 App Router)"]
+flowchart TD
+    subgraph Tier1["1. Frontend Applications (Next.js 15 App Router)"]
         GW["Gateway Portal (:3000)<br/>apps/gateway"]
         CW["Candidate Cockpit (:5173)<br/>apps/candidate-web"]
         RW["Recruiter Suite (:5174)<br/>apps/recruiter-web"]
     end
 
-    subgraph Backend["Unified Backend Layer (Bun + Express 5)"]
-        SRV["API Server<br/>apps/server"]
-        AUTH["Better Auth Engine<br/>packages/better-auth"]
-        TRPC["tRPC v11 Router<br/>packages/api"]
-        AISVC["AI Orchestration Service<br/>Vercel AI SDK"]
+    subgraph Tier2["2. Unified Backend Server (apps/server)"]
+        SRV["Express 5 Server (:3001 / :8000)<br/>Bun Runtime • Helmet • CORS • CookieParser"]
+        AUTH["Better Auth Handler<br/>/api/auth/*"]
+        TRPC["tRPC v11 Router<br/>/trpc/*"]
     end
 
-    subgraph External["External Services & Cloud"]
-        GEMINI["Google Gemini 2.5 Flash<br/>Multimodal & Text LLM"]
-        PG["PostgreSQL Database<br/>(Prisma ORM @ packages/db)"]
-        SPEECH["Browser Web Speech API<br/>(SpeechRecognition + Synthesis)"]
+    subgraph Tier3["3. Shared Packages & Core Services (packages/*)"]
+        AISVC["AI Orchestration Service<br/>Vercel AI SDK • ai.service.ts"]
+        PRISMA["Prisma Client ORM v7<br/>packages/db"]
+        TYPES["Shared Types & Zod Schemas<br/>packages/types"]
     end
 
-    GW -->|Route Selection| CW
-    GW -->|Route Selection| RW
+    subgraph Tier4["4. External Cloud Infrastructure"]
+        GEMINI["Google Gemini 2.5 Flash<br/>Multimodal AI Model"]
+        POSTGRES["PostgreSQL Database<br/>Neon Serverless"]
+        CLOUDINARY["Cloudinary CDN<br/>Resume PDF Storage"]
+    end
 
-    CW -->|tRPC and Better Auth| SRV
-    SRV -->|Response and Session| CW
-    RW -->|tRPC and Better Auth| SRV
-    SRV -->|Response and Session| RW
+    GW -->|Launch Candidate Portal| CW
+    GW -->|Launch Recruiter Portal| RW
 
-    CW -->|Speech Recognition| SPEECH
-    SPEECH -->|Audio Synthesis| CW
+    CW -->|tRPC & Better Auth Requests| SRV
+    RW -->|tRPC & Better Auth Requests| SRV
+
+    CW -.->|Unsigned PDF Upload| CLOUDINARY
 
     SRV --> AUTH
     SRV --> TRPC
+
+    AUTH --> PRISMA
     TRPC --> AISVC
-    TRPC --> PG
-    AUTH --> PG
-    AISVC -->|Prompt and Schema| GEMINI
-    GEMINI -->|Structured JSON| AISVC
+    TRPC --> PRISMA
+
+    AISVC -->|Prompt & Schema| GEMINI
+    PRISMA -->|SQL Queries via Pooler| POSTGRES
 ```
 
 ---

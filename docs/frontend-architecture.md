@@ -19,39 +19,38 @@ All three applications share common components and design primitives from `packa
 
 ```mermaid
 flowchart TD
-    subgraph UI_System["Shared Design System (packages/ui)"]
-        RADIX["Radix UI Primitives"]
-        TAILWIND["Tailwind CSS v4 Tokens"]
-        GEIST["Geist Sans / Mono Fonts"]
+    subgraph S1["1. Shared UI Foundation (packages/ui)"]
+        UI["Design System Tokens: Tailwind CSS v4 • Radix UI • Geist Typography"]
     end
 
-    UI_System --> GW["apps/gateway (:3000)"]
-    UI_System --> CW["apps/candidate-web (:5173)"]
-    UI_System --> RW["apps/recruiter-web (:5174)"]
-
-    subgraph Candidate_Features["apps/candidate-web"]
-        C_SETUP["Step 1: Resume Upload (Cloudinary) and AI Parse"]
-        C_LIVE["Step 2: Voice Interview Cockpit (Speech APIs)"]
-        C_REPORT["Step 3: AI Diagnostic Feedback and History"]
+    subgraph S2["2. Gateway Portal (apps/gateway :3000)"]
+        GW["Unified Product Landing & Portal Router"]
     end
 
-    subgraph Recruiter_Features["apps/recruiter-web"]
-        R_COMPANY["Company Profile and Team Invites"]
-        R_JOBS["Job Opening Management"]
-        R_CONFIG["Interview Question Templates and AI Generator"]
-        R_INVITE["Candidate Invitation Engine"]
-        R_EVAL["Candidate Response Analytics"]
+    subgraph S3["3. Candidate Web Cockpit (apps/candidate-web :5173)"]
+        direction TB
+        C1["Step 1: Resume Upload & Multimodal Parsing"]
+        C2["Step 2: Live Voice Interview Cockpit (Speech STT/TTS)"]
+        C3["Step 3: Diagnostic Report & Historical Analytics"]
+        C1 -->|Start Interview| C2
+        C2 -->|Submit Answers| C3
     end
 
-    CW --> C_SETUP
-    CW --> C_LIVE
-    CW --> C_REPORT
+    subgraph S4["4. Recruiter Web Suite (apps/recruiter-web :5174)"]
+        direction TB
+        R1["Company Profile & Team Member Invitations"]
+        R2["Job Opening Campaigns & Interview Configuration"]
+        R3["Candidate Invitations & Submission Evaluation Cockpit"]
+        R1 -->|Configure Roles| R2
+        R2 -->|Schedule Assessments| R3
+    end
 
-    RW --> R_COMPANY
-    RW --> R_JOBS
-    RW --> R_CONFIG
-    RW --> R_INVITE
-    RW --> R_EVAL
+    UI --> GW
+    UI --> S3
+    UI --> S4
+
+    GW -->|Candidate Practice Path| S3
+    GW -->|Recruiter Hiring Path| S4
 ```
 
 ---
