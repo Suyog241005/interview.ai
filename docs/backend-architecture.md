@@ -10,49 +10,42 @@ The backend is organized as a high-performance Express 5 server powered by the B
 
 ```mermaid
 flowchart TD
-    subgraph S1["1. HTTP Ingress (apps/server)"]
+    subgraph S1["1. HTTP Ingress & Security (apps/server)"]
         CLIENTS["Frontend Clients (:5173 / :5174 / :3000)"]
-        EXPRESS["Express 5 HTTP Server (:3001)<br/>CORS • Helmet • CookieParser • Multer"]
-        CLIENTS -->|HTTP Requests| EXPRESS
+        EXPRESS["Express 5 HTTP Server (:3001)<br/>CORS Whitelist • Helmet • CookieParser • Multer"]
+        CLIENTS -->|HTTP / RPC Requests| EXPRESS
     end
 
-    subgraph S2["2. Protocol Handlers"]
-        AUTH_ROUTER["Better Auth Handler<br/>/api/auth/*splat"]
+    subgraph S2["2. Protocol Handlers & Routing"]
+        AUTH_ROUTER["Better Auth Engine<br/>/api/auth/*splat"]
         TRPC_ROUTER["tRPC Express Middleware<br/>/trpc/*"]
         EXPRESS -->|Auth Endpoints| AUTH_ROUTER
         EXPRESS -->|RPC Queries & Mutations| TRPC_ROUTER
     end
 
     subgraph S3["3. tRPC Domain Routers (packages/api)"]
-        direction TB
-        R_AUTH["candidateAuth & recruiterAuth"]
-        R_PRACTICE["practice (Interview Cockpit)"]
-        R_RESUME["resume (PDF Upload & Parse)"]
-        R_COMPANY["company (Jobs, Invites, Questions)"]
-        TRPC_ROUTER --> R_AUTH
-        TRPC_ROUTER --> R_PRACTICE
-        TRPC_ROUTER --> R_RESUME
-        TRPC_ROUTER --> R_COMPANY
+        DB_ROUTERS["Auth & Company Routers<br/>candidateAuth • candidate • company"]
+        AI_ROUTERS["AI Assessment Routers<br/>practice (Cockpit) • resume (Parsing)"]
+        TRPC_ROUTER --> DB_ROUTERS
+        TRPC_ROUTER --> AI_ROUTERS
     end
 
     subgraph S4["4. Core Services & Database"]
-        AI_SVC["AI Orchestration Service<br/>Vercel AI SDK • ai.service.ts"]
         DB_SVC["Prisma Client ORM v7<br/>packages/db"]
-        AUTH_ROUTER --> DB_SVC
-        R_PRACTICE --> AI_SVC
-        R_RESUME --> AI_SVC
-        R_COMPANY --> AI_SVC
-        R_AUTH --> DB_SVC
-        R_PRACTICE --> DB_SVC
-        R_RESUME --> DB_SVC
-        R_COMPANY --> DB_SVC
+        AI_SVC["AI Orchestration Service<br/>Vercel AI SDK • ai.service.ts"]
+
+        AUTH_ROUTER -->|Manage Sessions| DB_SVC
+        DB_ROUTERS -->|CRUD Operations| DB_SVC
+        AI_ROUTERS -->|Generate Questions & Feedback| AI_SVC
+        AI_ROUTERS -->|Persist Sessions & Scores| DB_SVC
     end
 
     subgraph S5["5. External Infrastructure"]
-        GEMINI["Google Gemini 2.5 Flash"]
-        POSTGRES["PostgreSQL Database (Neon)"]
-        AI_SVC -->|Prompt & Schema| GEMINI
-        DB_SVC -->|SQL Queries| POSTGRES
+        POSTGRES[("PostgreSQL Database<br/>Neon Serverless")]
+        GEMINI["Google Gemini 2.5 Flash<br/>Multimodal AI Model"]
+
+        DB_SVC -->|SQL Queries via Pooler| POSTGRES
+        AI_SVC -->|Prompt & Structured Schema| GEMINI
     end
 ```
 

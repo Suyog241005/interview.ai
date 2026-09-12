@@ -19,34 +19,35 @@ flowchart TD
     end
 
     subgraph Tier3["3. Shared Packages & Core Services (packages/*)"]
-        AISVC["AI Orchestration Service<br/>Vercel AI SDK • ai.service.ts"]
         PRISMA["Prisma Client ORM v7<br/>packages/db"]
         TYPES["Shared Types & Zod Schemas<br/>packages/types"]
+        AISVC["AI Orchestration Service<br/>Vercel AI SDK • ai.service.ts"]
     end
 
     subgraph Tier4["4. External Cloud Infrastructure"]
+        POSTGRES[("PostgreSQL Database<br/>Neon Serverless")]
         GEMINI["Google Gemini 2.5 Flash<br/>Multimodal AI Model"]
-        POSTGRES["PostgreSQL Database<br/>Neon Serverless"]
         CLOUDINARY["Cloudinary CDN<br/>Resume PDF Storage"]
     end
 
-    GW -->|Launch Candidate Portal| CW
-    GW -->|Launch Recruiter Portal| RW
+    GW -->|Portal Select| CW
+    GW -->|Portal Select| RW
 
-    CW -->|tRPC & Better Auth Requests| SRV
-    RW -->|tRPC & Better Auth Requests| SRV
-
-    CW -.->|Unsigned PDF Upload| CLOUDINARY
+    CW -->|tRPC & Auth Requests| SRV
+    RW -->|tRPC & Auth Requests| SRV
 
     SRV --> AUTH
     SRV --> TRPC
 
-    AUTH --> PRISMA
-    TRPC --> AISVC
-    TRPC --> PRISMA
+    AUTH -->|User & Session Persistence| PRISMA
+    TRPC -->|Database CRUD Operations| PRISMA
+    TRPC -->|Validates Input & Output| TYPES
+    TYPES -->|Structured JSON Schemas| AISVC
+    TRPC -->|AI Generation Workflows| AISVC
 
-    AISVC -->|Prompt & Schema| GEMINI
     PRISMA -->|SQL Queries via Pooler| POSTGRES
+    AISVC -->|Prompt & Structured Schema| GEMINI
+    CW -.->|Unsigned PDF Upload| CLOUDINARY
 ```
 
 ---
