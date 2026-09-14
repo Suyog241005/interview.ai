@@ -86,3 +86,8 @@ export const GetCompanyInterviewById = z.object({
 export type GetCompanyInterviewByIdRequest = z.infer<
   typeof GetCompanyInterviewById
 >;
+
+export const InvitationTokenSchema = z.object({
+  token: z.string().min(1),
+});
+export type InvitationTokenRequest = z.infer<typeof InvitationTokenSchema>;

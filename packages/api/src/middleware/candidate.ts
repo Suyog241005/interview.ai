@@ -1,20 +1,15 @@
 import { prisma } from "@interview.ai/db";
 import { protectedProcedure } from "../trpc";
-import { TRPCError } from "@trpc/server";
 
+/** Any signed-in user is a candidate; the row is created on first use. */
 export const protectedCandidateProcedure = protectedProcedure.use(
   async ({ next, ctx }) => {
-    const candidate = await prisma.candidate.findUnique({
-      where: {
-        userId: ctx.userId,
-      },
+    const candidate = await prisma.candidate.upsert({
+      where: { userId: ctx.userId },
+      create: { userId: ctx.userId },
+      update: {},
+      select: { id: true },
     });
-    if (!candidate) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Candidate profile not found",
-      });
-    }
     return next({
       ctx: {
         ...ctx,

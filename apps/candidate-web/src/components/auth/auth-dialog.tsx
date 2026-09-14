@@ -16,7 +16,7 @@ export const AuthDialog = () => {
     try {
       await signIn.social({
         provider: "google",
-        callbackURL: window.location.origin,
+        callbackURL: window.location.href,
       });
     } catch (error) {
       console.error("Google authentication error:", error);

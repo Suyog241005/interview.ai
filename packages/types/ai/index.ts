@@ -40,7 +40,11 @@ export type CreatePracticeInterviewQuestions = z.infer<
 // export type AnswerEvaluation = z.infer<typeof AnswerEvaluationSchema>;
 
 export const GenerateAiResultForPracticeInterviewSchema = z.object({
-  overallScore: z.number().describe("Overall score of the interview"),
+  overallScore: z
+    .number()
+    .min(0)
+    .max(100)
+    .describe("Overall score of the interview from 0 (worst) to 100 (best)"),
   strengths: z.array(z.string()).describe("Strengths of the candidate"),
   weaknesses: z.array(z.string()).describe("Weaknesses of the candidate"),
   summary: z.string().describe("Summary of the interview"),

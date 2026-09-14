@@ -202,3 +202,15 @@ appRouter
 - **`updateQuestion`** (`protectedRecruiterProcedure.mutation`): Edits text, difficulty, time limit, or category.
 - **`deleteQuestion`** (`protectedRecruiterProcedure.mutation`): Deletes a question.
 - **`generateAiQuestions`** (`protectedRecruiterProcedure.mutation`): Automatically generates a complete question set using Gemini 2.5 Flash based on the job's title, description, and `InterviewConfig`.
+
+### 7. `companyInterview` Router (`packages/api/src/routers/company-interview/index.ts`)
+
+Candidate side of a recruiter invitation. Recruiters build a candidate-less **template** `CompanyInterview` per job (`company.createInterview` without `candidateId`, then `generateAiQuestions`); redeeming an invitation clones the template and its questions into a per-candidate interview, so one template serves every invite for that job.
+
+- **`getInvitation`** (`publicProcedure.query`): Input `{ token }`. Returns `{ status, expiresAt, candidateEmail, candidateName, jobTitle, companyName, interviewMode, questionCount }`. Never returns questions. `NOT_FOUND` for unknown tokens.
+- **`redeemInvitation`** (`protectedCandidateProcedure.mutation`): Input `{ token }`. Session email must match `candidateEmail` (`FORBIDDEN` otherwise). On a `PENDING` token: transaction creates the candidate's `CompanyInterview` (status `PENDING`) with copied `CompanyQuestion` rows and marks the invitation `ACCEPTED`. On an already `ACCEPTED` token owned by the same candidate: returns the existing interview (idempotent; supports refresh/resume). Returns `{ interview (with questions, report), jobTitle, interviewMode }`.
+- **`start`** (`protectedCandidateProcedure.mutation`): Input `{ interviewId }`. `PENDING` → `IN_PROGRESS`, sets `startedAt`. `BAD_REQUEST` if not pending or not owned.
+- **`submitAnswer`** (`protectedCandidateProcedure.mutation`): Input `{ interviewId, questionId, userAnswer }`. Requires `IN_PROGRESS`. Sets `userAnswer`, `isAnswered`.
+- **`generateReport`** (`protectedCandidateProcedure.mutation`): Input `{ interviewId }`. Runs the Gemini report (`generatePracticeInterviewReport`, now shape-agnostic) with the job title, min experience and config mode; writes `CompanyInterviewReport`, sets `COMPLETED` + `completedAt`. Recruiters read it via `company.getCompanyInterviewById`.
+
+Note: `protectedCandidateProcedure` now upserts the `Candidate` row on first use, so any signed-in user can redeem an invitation without calling `candidateAuth.becomeCandidate`.

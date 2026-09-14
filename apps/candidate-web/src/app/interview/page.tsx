@@ -1,4 +1,5 @@
 import InterviewPage from "@/views/Interview";
+import CompanyInterviewPage from "@/views/CompanyInterview";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,6 +12,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <InterviewPage />;
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) {
+  const { token } = await searchParams;
+  return token ? <CompanyInterviewPage token={token} /> : <InterviewPage />;
 }

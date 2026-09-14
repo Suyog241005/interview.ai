@@ -13,10 +13,24 @@ import {
   ShieldAlertIcon,
   Volume2Icon,
 } from "lucide-react";
-import {
-  trpc,
-  type PracticeInterviewWithQuestion,
-} from "@interview.ai/api/client";
+
+export type CockpitQuestion = {
+  id: string;
+  questionText: string;
+  difficulty: string;
+  timeLimitSeconds: number;
+};
+
+/** Procedure-agnostic cockpit: the parent wires practice or company tRPC calls. */
+export type CockpitProps = {
+  interviewId: string;
+  questions: CockpitQuestion[];
+  role: string;
+  interviewMode: string;
+  onStart: () => Promise<unknown>;
+  onSubmit: (questionId: string, userAnswer: string) => Promise<unknown>;
+  onFinish: () => Promise<unknown>;
+};
 
 declare global {
   interface Window {
@@ -26,13 +40,14 @@ declare global {
 }
 
 const LiveInterviewContent = ({
-  interviewData,
-  onComplete,
-}: {
-  interviewData: PracticeInterviewWithQuestion;
-  onComplete: (report: PracticeInterviewWithQuestion) => void;
-}) => {
-  const { id, questions } = interviewData;
+  interviewId: id,
+  questions,
+  role,
+  interviewMode,
+  onStart,
+  onSubmit,
+  onFinish,
+}: CockpitProps) => {
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState<number>(
     questions[currentQIndex].timeLimitSeconds,
@@ -41,16 +56,6 @@ const LiveInterviewContent = ({
   const recognitionRef = useRef<unknown>(null);
   const transcriptRef = useRef("");
   const [liveTranscript, setLiveTranscript] = useState("");
-
-  const { data: fetchedInterviewData } =
-    trpc.practice.getPracticeInterview.useQuery({ id });
-  const interview = fetchedInterviewData?.practiceInterview ?? null;
-
-  const startInterviewMutation =
-    trpc.practice.startPracticeInterview.useMutation();
-  const submitAnswerMutation = trpc.practice.submitAnswer.useMutation();
-  const generateReportMutation =
-    trpc.practice.generatePracticeInterviewReport.useMutation();
 
   const startRecognition = () => {
     const SpeechRecognition =
@@ -119,11 +124,7 @@ const LiveInterviewContent = ({
     questionId: string;
   }) => {
     try {
-      await submitAnswerMutation.mutateAsync({
-        interviewId: id,
-        questionId,
-        userAnswer: transcript,
-      });
+      await onSubmit(questionId, transcript);
     } catch (error) {
       console.error("Failed to submit answer:", error);
     }
@@ -144,13 +145,7 @@ const LiveInterviewContent = ({
         setCurrentQIndex(nextIndex);
         setTimeLeft(questions[nextIndex].timeLimitSeconds);
       } else {
-        const result = await generateReportMutation.mutateAsync({
-          practiceinterviewId: id,
-        });
-
-        if (result?.practiceInterview) {
-          onComplete(result.practiceInterview as any);
-        }
+        await onFinish();
       }
     } catch (error) {
       console.error("Failed to process answer:", error);
@@ -338,10 +333,10 @@ const LiveInterviewContent = ({
                       Target track profile
                     </h4>
                     <p className="text-xs text-slate-800 dark:text-zinc-300 mt-1 font-semibold font-sans">
-                      {interview?.role ? interview.role : "SOFTWARE ENGINEER"}
+                      {role}
                     </p>
                     <span className="inline-block px-2 py-0.5 text-[10px] font-mono bg-slate-200 dark:bg-zinc-800 text-slate-800 dark:text-zinc-300 mt-2 rounded-md">
-                      {interview?.interviewMode ? interview.interviewMode : "TECHNICAL"}
+                      {interviewMode}
                     </span>
                   </div>
                 </div>
@@ -377,9 +372,7 @@ const LiveInterviewContent = ({
                 onClick={async () => {
                   try {
                     setInterviewStarted(true);
-                    await startInterviewMutation.mutateAsync({
-                      practiceinterviewId: id,
-                    });
+                    await onStart();
                   } catch (error) {
                     setInterviewStarted(false);
                     console.error("Failed to start interview:", error);
@@ -399,10 +392,7 @@ const LiveInterviewContent = ({
   );
 };
 
-export const Step2Interview = (props: {
-  interviewData: PracticeInterviewWithQuestion;
-  onComplete: (report: PracticeInterviewWithQuestion) => void;
-}) => {
+export const Step2Interview = (props: CockpitProps) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

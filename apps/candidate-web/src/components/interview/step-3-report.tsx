@@ -14,15 +14,29 @@ import {
 } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
 import { useRouter } from "next/navigation";
-import type { PracticeInterviewWithQuestion } from "@interview.ai/api/client";
 import type { PracticeQuestion } from "@interview.ai/types/db";
+
+/** Fields the report reads; PracticeQuestion and CompanyQuestion both provide them. */
+export type ReportQuestion = Pick<
+  PracticeQuestion,
+  | "id"
+  | "questionText"
+  | "difficulty"
+  | "category"
+  | "userAnswer"
+  | "aiFeedback"
+  | "questionScore"
+  | "confidenceScore"
+  | "communicationScore"
+  | "correctnessScore"
+>;
 
 export const Step3Report = ({
   report,
   onRetake,
 }: {
-  report: PracticeInterviewWithQuestion;
-  onRetake: () => void;
+  report: { questions: ReportQuestion[] };
+  onRetake?: () => void;
 }) => {
   const router = useRouter();
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(
@@ -33,7 +47,7 @@ export const Step3Report = ({
     setActiveQuestionId(activeQuestionId === id ? null : id);
   };
 
-  const calculateAverage = (key: keyof PracticeQuestion) => {
+  const calculateAverage = (key: keyof ReportQuestion) => {
     if (!report.questions.length) return 0;
     const sum = report.questions.reduce((acc, q) => {
       const val = q[key];
@@ -86,6 +100,7 @@ export const Step3Report = ({
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            {onRetake && (
             <Button
               onClick={onRetake}
               className="px-4 py-2.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-900 dark:text-white font-mono text-xs uppercase tracking-tight gap-2 cursor-pointer transition-all shadow-xs"
@@ -93,6 +108,7 @@ export const Step3Report = ({
               <RefreshCwIcon className="h-3.5 w-3.5 text-slate-500 dark:text-zinc-400" />
               <span>New Interview</span>
             </Button>
+            )}
             <Button
               onClick={() => router.push("/")}
               className="px-5 py-2.5 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 font-medium text-xs tracking-tight gap-2 cursor-pointer transition-all shadow-md font-sans"

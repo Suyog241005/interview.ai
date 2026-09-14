@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 import { Step1Setup } from "@/components/interview/step-1-setup";
 import { Step2Interview } from "@/components/interview/step-2-interview";
 import { Step3Report } from "@/components/interview/step-3-report";
-import type { PracticeInterviewWithQuestion } from "@interview.ai/api/client";
+import { trpc, type PracticeInterviewWithQuestion } from "@interview.ai/api/client";
 
 export default function InterviewPage() {
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [interviewData, setInterviewData] =
     useState<null | PracticeInterviewWithQuestion>(null);
+
+  const start = trpc.practice.startPracticeInterview.useMutation();
+  const submit = trpc.practice.submitAnswer.useMutation();
+  const finish = trpc.practice.generatePracticeInterviewReport.useMutation();
 
   useEffect(() => {
     setMounted(true);
@@ -38,9 +42,19 @@ export default function InterviewPage() {
       )}
       {step === 2 && interviewData && (
         <Step2Interview
-          interviewData={interviewData}
-          onComplete={(report) => {
-            setInterviewData(report);
+          interviewId={interviewData.id}
+          questions={interviewData.questions}
+          role={interviewData.role}
+          interviewMode={interviewData.interviewMode}
+          onStart={() => start.mutateAsync({ practiceinterviewId: interviewData.id })}
+          onSubmit={(questionId, userAnswer) =>
+            submit.mutateAsync({ interviewId: interviewData.id, questionId, userAnswer })
+          }
+          onFinish={async () => {
+            const { practiceInterview } = await finish.mutateAsync({
+              practiceinterviewId: interviewData.id,
+            });
+            setInterviewData(practiceInterview);
             setStep(3);
           }}
         />

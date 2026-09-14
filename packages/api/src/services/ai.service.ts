@@ -7,7 +7,20 @@ import {
   type ResumeAnalysis,
 } from "@interview.ai/types";
 import type { InterviewMode } from "@interview.ai/db/enums";
-import type { PracticeInterviewWithQuestion } from "@interview.ai/types/db";
+
+/** Structural input for report generation; both Practice and Company interviews satisfy it. */
+export type InterviewReportInput = {
+  interviewMode: string;
+  role: string;
+  experienceYears: number;
+  questions: {
+    questionText: string;
+    difficulty: string;
+    category: string | null;
+    timeLimitSeconds: number;
+    userAnswer: string | null;
+  }[];
+};
 import {
   GenerateAiResultForPracticeInterviewSchema,
   type GenerateAiResultForPracticeInterview,
@@ -146,7 +159,7 @@ Expected JSON schema format:
 };
 
 export const generatePracticeInterviewReport = async (
-  practiceInterview: PracticeInterviewWithQuestion,
+  practiceInterview: InterviewReportInput,
 ): Promise<GenerateAiResultForPracticeInterview> => {
   try {
     const prompt = `
