@@ -1,30 +1,32 @@
-import HomePage from "@/views/Home";
-import type { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Online Interview AI | Free Online AI Interview Practice Tool",
-  description:
-    "Accelerate your tech career with our online interview AI tool. Experience free online AI interview practice with speech-driven AI models, custom role prompts, and instant diagnostic feedback.",
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: "Online Interview AI | Free Online AI Interview Practice Tool",
-    description:
-      "Engineered for software engineers and candidates: Speech-driven online AI interview practice with real-time feedback and diagnostic scoring.",
-    url: "https://interview.ai",
-    siteName: "Interview.AI",
-    images: [
-      {
-        url: "/icon.png",
-        width: 512,
-        height: 512,
-        alt: "Online Interview AI Tool Preview",
-      },
-    ],
-  },
-};
+import Link from "next/link";
+import { useSession } from "@interview.ai/better-auth/client";
+import { Button } from "@interview.ai/ui/button";
+import { PageShell } from "@/components/shell";
 
 export default function Page() {
-  return <HomePage />;
+  const { data: session } = useSession();
+
+  return (
+    <PageShell>
+      <section className="py-20 text-center space-y-6">
+        <span className="inline-flex px-3 py-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[11px] font-mono tracking-tight text-[#007cf0] rounded-full">
+          recruiter // suite
+        </span>
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+          Screen candidates with AI voice interviews.
+        </h1>
+        <p className="max-w-xl mx-auto text-sm text-slate-600 dark:text-zinc-400">
+          Post a job, generate a tailored question set with Gemini, send a
+          tokenized invite, and review scored transcripts when candidates finish.
+        </p>
+        <Button asChild className="rounded-full bg-[#171717] dark:bg-white text-white dark:text-black px-6">
+          <Link href={session?.user ? "/dashboard" : "/auth"}>
+            {session?.user ? "Go to dashboard" : "Sign in to get started"}
+          </Link>
+        </Button>
+      </section>
+    </PageShell>
+  );
 }

@@ -26,9 +26,9 @@ This document lists every environment variable utilized across all workspaces, t
 | `NEXT_PUBLIC_PROD_API_URL`| `candidate-web`, `recruiter-web`, `gateway` | Prod | Client-side pointer to production API | `https://api.yourdomain.com` |
 | `NEXT_PUBLIC_DEV_AUTH_URL`| `candidate-web`, `recruiter-web`, `gateway` | Dev | Client-side Better Auth base endpoint | `http://localhost:3001` |
 | `NEXT_PUBLIC_PROD_AUTH_URL`| `candidate-web`, `recruiter-web`, `gateway` | Prod | Client-side Better Auth production endpoint | `https://api.yourdomain.com` |
-| `NEXT_PUBLIC_CANDIDATE_URL`| `apps/gateway` | Dev | Gateway link to Candidate Cockpit | `http://localhost:5173` |
+| `NEXT_PUBLIC_CANDIDATE_URL`| `apps/gateway`, `recruiter-web` | Dev | Link to Candidate Web (gateway nav, recruiter invite links) | `http://localhost:5173` |
 | `NEXT_PUBLIC_RECRUITER_URL`| `apps/gateway` | Dev | Gateway link to Recruiter Suite | `http://localhost:5174` |
-| `NEXT_PUBLIC_PROD_CANDIDATE_URL` | `apps/gateway` | Prod | Gateway production link to Candidate Web | `https://candidate.yourdomain.com` |
+| `NEXT_PUBLIC_PROD_CANDIDATE_URL` | `apps/gateway`, `recruiter-web` | Prod | Production link to Candidate Web (gateway nav, recruiter invite links) | `https://candidate.yourdomain.com` |
 | `NEXT_PUBLIC_PROD_RECRUITER_URL` | `apps/gateway` | Prod | Gateway production link to Recruiter Web | `https://recruiter.yourdomain.com` |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | `candidate-web`, `recruiter-web`, `gateway` | Dev & Prod | Cloudinary cloud account name for resume PDF storage | `your-cloudinary-cloud-name` |
 | `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | `candidate-web`, `recruiter-web`, `gateway` | Dev & Prod | Unsigned Cloudinary upload preset name | `your-upload-preset` |

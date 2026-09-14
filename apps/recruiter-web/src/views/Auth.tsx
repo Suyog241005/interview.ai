@@ -16,7 +16,9 @@ export default function AuthPage() {
     try {
       await signIn.social({
         provider: "google",
-        callbackURL: window.location.origin,
+        callbackURL:
+          window.location.origin +
+          (new URLSearchParams(window.location.search).get("next") ?? "/"),
       });
     } catch (error) {
       console.error("Google authentication error:", error);
@@ -56,13 +58,13 @@ export default function AuthPage() {
             <div className="text-center mb-6">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[11px] font-mono tracking-tight text-[#007cf0] rounded-full mb-3">
                 <SparklesIcon size={12} />
-                <span>ai-assessment // authentication</span>
+                <span>recruiter-suite // authentication</span>
               </span>
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
-                Sign in to your candidate account.
+                Sign in to your recruiter workspace.
               </h2>
               <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal mt-2 leading-relaxed font-sans">
-                Access your personalized mock interviews, voice analysis, and historical performance insights.
+                Manage job openings, generate AI interview questions, and review candidate assessments.
               </p>
             </div>
 
