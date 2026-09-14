@@ -32,3 +32,13 @@ export const inviteRecruiter = protectedCompanyOwnerProcedure
 
     return { inviteRecruiter };
   });
+
+export const getRecruiterInvitations = protectedCompanyOwnerProcedure.query(
+  async ({ ctx }) => {
+    const invitations = await prisma.recruiterInvitation.findMany({
+      where: { companyId: ctx.companyId },
+      orderBy: { createdAt: "desc" },
+    });
+    return { invitations };
+  },
+);

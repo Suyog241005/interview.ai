@@ -1,4 +1,5 @@
 import { InviteCandidateSchema } from "@interview.ai/types/company";
+import { GetJobSchema } from "@interview.ai/types/job";
 import { protectedRecruiterProcedure } from "../../middleware/recruiter";
 import { generateInviteCode } from "../../utils/invite-token";
 import { prisma } from "@interview.ai/db";
@@ -53,4 +54,15 @@ export const inviteCandidate = protectedRecruiterProcedure
     });
 
     return { invitation };
+  });
+
+export const getInvitations = protectedRecruiterProcedure
+  .input(GetJobSchema)
+  .query(async ({ input, ctx }) => {
+    const invitations = await prisma.invitation.findMany({
+      where: { jobId: input.jobId, job: { companyId: ctx.companyId } },
+      orderBy: { createdAt: "desc" },
+      include: { interview: { select: { id: true, status: true } } },
+    });
+    return { invitations };
   });

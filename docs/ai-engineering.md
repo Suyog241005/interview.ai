@@ -163,16 +163,12 @@ Category: {category}
 Time Limit: {timeLimitSeconds}
 User Answer: {userAnswer}
 
-Return the response in the following JSON format:
-{
-  "aiFeedback": "string",
-  "score": number,
-  "strengths": string[],
-  "weaknesses": string[],
-  "summary": "string",
-  "recommendation": "string"
-}
+Score every question individually (0-100 on each dimension) and echo its Question ID exactly.
+An empty or missing answer scores 0 on every dimension. Then give an overall 0-100 score,
+strengths, weaknesses, a summary and a recommendation for the whole interview.
 ```
+
+Output is enforced by `GenerateAiResultForPracticeInterviewSchema` (`packages/types/ai`): `questions[]` of `{ questionId, questionScore, correctnessScore, communicationScore, confidenceScore, aiFeedback }` plus `overallScore`, `strengths`, `weaknesses`, `summary`, `recommendation`. `questionEvaluations()` in `ai.service.ts` maps each evaluation back to its row by id (position as fallback) and both report procedures write the scores onto `PracticeQuestion` / `CompanyQuestion`. Used for practice and company interviews alike.
 
 #### Scoring Metrics Breakdown:
 - **`overallScore` (0–100)**: Composite hiring readiness score.

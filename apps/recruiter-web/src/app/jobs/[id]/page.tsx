@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { SparklesIcon, Trash2Icon } from "lucide-react";
 import { trpc, type RouterOutputs } from "@interview.ai/api/client";
@@ -186,23 +187,20 @@ function QuestionRow({
 }
 
 function Invite({ jobId, interviewId }: { jobId: string; interviewId: string }) {
-  const invite = trpc.company.inviteCandidate.useMutation();
+  const utils = trpc.useUtils();
+  const invitations = trpc.company.getInvitations.useQuery({ jobId });
+  const invite = trpc.company.inviteCandidate.useMutation({
+    onSuccess: () => utils.company.getInvitations.invalidate({ jobId }),
+  });
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  // ponytail: no list-invitations procedure; links live in component state for this session only
-  const [links, setLinks] = useState<{ email: string; url: string }[]>([]);
 
   const onInvite = async () => {
-    const { invitation } = await invite.mutateAsync({
-      jobId,
-      interviewId,
-      candidateEmail: email,
-      candidateName: name || undefined,
-    });
-    setLinks((l) => [{ email, url: `${CANDIDATE_URL}/interview?token=${invitation.token}` }, ...l]);
+    await invite.mutateAsync({ jobId, interviewId, candidateEmail: email, candidateName: name || undefined });
     setEmail("");
     setName("");
   };
+  const links = invitations.data?.invitations ?? [];
 
   return (
     <Card className="p-6 space-y-4">
@@ -217,13 +215,27 @@ function Invite({ jobId, interviewId }: { jobId: string; interviewId: string }) 
       {invite.error && <p className="text-xs text-rose-500">{invite.error.message}</p>}
       {links.length > 0 && (
         <ul className="space-y-2 pt-2 border-t border-slate-200 dark:border-zinc-800">
-          {links.map((l) => (
-            <li key={l.url} className="flex items-center gap-2 text-xs">
-              <span className="font-mono text-slate-500 w-48 truncate shrink-0">{l.email}</span>
-              <code className="flex-1 truncate text-slate-700 dark:text-zinc-300">{l.url}</code>
-              <CopyButton value={l.url} />
-            </li>
-          ))}
+          {links.map((l) => {
+            const url = `${CANDIDATE_URL}/interview?token=${l.token}`;
+            const expired = l.status === "PENDING" && new Date(l.expiresAt) < new Date();
+            const label = expired ? "EXPIRED" : l.status === "ACCEPTED" ? (l.interview?.status ?? "ACCEPTED") : l.status;
+            return (
+              <li key={l.id} className="flex items-center gap-2 text-xs">
+                <span className="font-mono text-slate-500 w-48 truncate shrink-0">{l.candidateEmail}</span>
+                <Badge variant={label === "COMPLETED" ? "default" : "outline"} className="shrink-0">
+                  {label.replace("_", " ")}
+                </Badge>
+                {l.interview && l.status === "ACCEPTED" ? (
+                  <Link href={`/interviews/${l.interview.id}`} className="flex-1 truncate text-[#007cf0] hover:underline">
+                    View interview
+                  </Link>
+                ) : (
+                  <code className="flex-1 truncate text-slate-700 dark:text-zinc-300">{url}</code>
+                )}
+                <CopyButton value={url} />
+              </li>
+            );
+          })}
         </ul>
       )}
       <p className="text-[11px] text-slate-400">Links expire in 7 days. Send them to the candidate yourself; email delivery is not wired up yet.</p>

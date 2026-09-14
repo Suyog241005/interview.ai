@@ -12,6 +12,7 @@ import { protectedCandidateProcedure } from "../../middleware/candidate";
 import {
   generatePracticeInterviewQuestions,
   generatePracticeInterviewReport,
+  questionEvaluations,
 } from "../../services/ai.service";
 import { TRPCError } from "@trpc/server";
 import { Difficulty } from "@interview.ai/db/enums";
@@ -224,27 +225,32 @@ export const practiceInterviewRouter = router({
       const { overallScore, strengths, weaknesses, summary, recommendation } =
         aiResult;
 
-      const updatedPracticeInterview = await prisma.practiceInterview.update({
-        where: {
-          id: practiceinterviewId,
-          candidateId,
-        },
-        data: {
-          status: "COMPLETED",
-          report: {
-            create: {
-              overallScore,
-              strengths,
-              weaknesses,
-              summary,
-              recommendation,
+      const updatedPracticeInterview = await prisma.$transaction(async (tx) => {
+        for (const q of questionEvaluations(practiceInterview.questions, aiResult.questions)) {
+          await tx.practiceQuestion.update({ where: { id: q.questionId }, data: q.data });
+        }
+        return tx.practiceInterview.update({
+          where: {
+            id: practiceinterviewId,
+            candidateId,
+          },
+          data: {
+            status: "COMPLETED",
+            report: {
+              create: {
+                overallScore,
+                strengths,
+                weaknesses,
+                summary,
+                recommendation,
+              },
             },
           },
-        },
-        include: {
-          questions: true,
-          report: true,
-        },
+          include: {
+            questions: { orderBy: { displayOrder: "asc" } },
+            report: true,
+          },
+        });
       });
 
       return { practiceInterview: updatedPracticeInterview };

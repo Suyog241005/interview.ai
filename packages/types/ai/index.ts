@@ -39,7 +39,23 @@ export type CreatePracticeInterviewQuestions = z.infer<
 // );
 // export type AnswerEvaluation = z.infer<typeof AnswerEvaluationSchema>;
 
+const score = (what: string) =>
+  z.number().min(0).max(100).describe(`${what} from 0 (worst) to 100 (best)`);
+
+export const QuestionEvaluationSchema = z.object({
+  questionId: z.string().describe("The exact id of the question being evaluated, copied from the prompt"),
+  questionScore: score("Overall score for this answer"),
+  correctnessScore: score("Technical accuracy and soundness of the answer"),
+  communicationScore: score("Structure, clarity and conciseness of the answer"),
+  confidenceScore: score("Decisiveness and readiness in the answer"),
+  aiFeedback: z.string().describe("Concise feedback on this answer, at most 25 words"),
+});
+export type QuestionEvaluation = z.infer<typeof QuestionEvaluationSchema>;
+
 export const GenerateAiResultForPracticeInterviewSchema = z.object({
+  questions: z
+    .array(QuestionEvaluationSchema)
+    .describe("One evaluation per question, in the order given"),
   overallScore: z
     .number()
     .min(0)

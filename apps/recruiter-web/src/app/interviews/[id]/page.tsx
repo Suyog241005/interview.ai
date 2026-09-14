@@ -90,6 +90,15 @@ export default function InterviewDetailPage() {
                       <p className="text-sm text-slate-600 dark:text-zinc-400 mt-2 whitespace-pre-wrap font-mono">
                         {x.userAnswer?.trim() || (x.isAnswered ? "(no speech captured)" : "(unanswered)")}
                       </p>
+                      {i.report && (
+                        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-zinc-800 space-y-1">
+                          <p className="text-[11px] font-mono text-slate-500">
+                            score {x.questionScore} · correctness {x.correctnessScore} · communication{" "}
+                            {x.communicationScore} · confidence {x.confidenceScore}
+                          </p>
+                          {x.aiFeedback && <p className="text-xs text-slate-700 dark:text-zinc-300">{x.aiFeedback}</p>}
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ol>

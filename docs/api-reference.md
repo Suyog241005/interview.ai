@@ -203,6 +203,11 @@ appRouter
 - **`deleteQuestion`** (`protectedRecruiterProcedure.mutation`): Deletes a question.
 - **`generateAiQuestions`** (`protectedRecruiterProcedure.mutation`): Automatically generates a complete question set using Gemini 2.5 Flash based on the job's title, description, and `InterviewConfig`.
 
+- **`getInvitations`** (`protectedRecruiterProcedure.query`): Input `{ jobId }`. All candidate invitations for a job, newest first, each with `interview { id, status }` so the UI can link accepted ones to `/interviews/[id]`.
+- **`getRecruiterInvitations`** (`protectedCompanyOwnerProcedure.query`): All recruiter invitations for the owner's company, newest first.
+
+Both report procedures (`practice.generatePracticeInterviewReport`, `companyInterview.generateReport`) now also write per-question `questionScore`, `correctnessScore`, `communicationScore`, `confidenceScore` and `aiFeedback` in the same transaction as the report. See `docs/ai-engineering.md`.
+
 ### 7. `companyInterview` Router (`packages/api/src/routers/company-interview/index.ts`)
 
 Candidate side of a recruiter invitation. Recruiters build a candidate-less **template** `CompanyInterview` per job (`company.createInterview` without `candidateId`, then `generateAiQuestions`); redeeming an invitation clones the template and its questions into a per-candidate interview, so one template serves every invite for that job.

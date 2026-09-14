@@ -33,13 +33,13 @@ Resume upload → Gemini analysis → tailored questions → voice cockpit → s
 | `/accept-invite?token=` | `recruiterAuth.acceptInvitation` |
 | `/dashboard` | `company.getCompany` (jobs list) |
 | `/jobs/new` | `company.createJob` + `company.upsertInterviewConfig` |
-| `/jobs/[id]` | `company.createInterview` (candidate-less template), `generateAiQuestions`, question CRUD, `inviteCandidate` → copyable link |
+| `/jobs/[id]` | `company.createInterview` (candidate-less template), `generateAiQuestions`, question CRUD, `inviteCandidate`, `getInvitations` (status per invite, link to the interview once accepted) |
 | `/interviews` | `company.getAllCompanyInterviews` (templates filtered out) |
 | `/interviews/[id]` | `company.getCompanyInterviewById` (transcript + report) |
-| `/team` | `company.inviteRecruiter` (owner only) → copyable link |
+| `/team` | `company.inviteRecruiter` + `getRecruiterInvitations` (owner only) |
 
 ### Company assessment loop (`companyInterview` router)
-Recruiter invite link → candidate opens `/interview?token=` → sign in → redeem (clones the job's template interview + questions for this candidate) → same voice cockpit → Gemini report → visible to recruiters. Redeem is idempotent, email-checked, and rejects expired tokens.
+Recruiter invite link → candidate opens `/interview?token=` → sign in → redeem (clones the job's template interview + questions for this candidate) → same voice cockpit → Gemini report with per-question scores and feedback → visible to recruiters. Redeem is idempotent, email-checked, and rejects expired tokens.
 
 ### Data model decisions
 - A `CompanyInterview` with `candidateId = null` is a **per-job template**. Recruiters generate questions on it once; every invite clones it.
@@ -51,9 +51,7 @@ Recruiter invite link → candidate opens `/interview?token=` → sign in → re
 
 | Gap | Where | Add when |
 | :--- | :--- | :--- |
-| Invite links are shown once, in-session only. No list of past invitations. | `/jobs/[id]`, `/team` | Recruiters ask "who did I invite?" → add `company.getInvitations` / `getRecruiterInvitations`. |
 | No email delivery for invites. | `inviteCandidate`, `inviteRecruiter` | Add Resend/Cloudflare Email behind the same mutations. |
-| Report has an overall score only. Per-question `questionScore` / `confidenceScore` / `communicationScore` / `correctnessScore` stay `0`, so the candidate report's four averages read 0. | `ai.service.generatePracticeInterviewReport` | Extend the Zod output with a per-question array and write it back in both report procedures. |
 | Question editing is text-only. Difficulty and time limit are not editable in the UI. | `/jobs/[id]` | `updateQuestion` already accepts them. |
 | No pagination anywhere. | all list queries | Lists exceed a few hundred rows. |
 | Gateway still links to both apps with static copy. | `apps/gateway` | Marketing pass. |
@@ -63,11 +61,11 @@ Recruiter invite link → candidate opens `/interview?token=` → sign in → re
 ## 🗺️ 3. Roadmap
 
 ### Phase 4: Report depth
-1. Per-question scoring + `aiFeedback` from Gemini (one schema change, two procedures).
+1. ~~Per-question scoring + `aiFeedback` from Gemini, shown on `/interviews/[id]`.~~ Done.
 2. Recruiter-facing comparison across candidates for a job.
 
 ### Phase 5: Invitation lifecycle
-1. `getInvitations` per job, resend, revoke (`status = REJECTED`).
+1. ~~`getInvitations` per job.~~ Done. Still missing: resend, revoke (`status = REJECTED`).
 2. Transactional email.
 
 ### Phase 6: Billing

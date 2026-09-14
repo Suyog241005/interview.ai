@@ -7,7 +7,7 @@ import {
 } from "@interview.ai/types/interview";
 import { publicProcedure, router } from "../../trpc";
 import { protectedCandidateProcedure } from "../../middleware/candidate";
-import { generatePracticeInterviewReport } from "../../services/ai.service";
+import { generatePracticeInterviewReport, questionEvaluations } from "../../services/ai.service";
 
 /**
  * Candidate side of a company assessment.
@@ -176,22 +176,27 @@ const generateReport = protectedCandidateProcedure
       questions: interview.questions,
     });
 
-    const updated = await prisma.companyInterview.update({
-      where: { id: interview.id },
-      data: {
-        status: "COMPLETED",
-        completedAt: new Date(),
-        report: {
-          create: {
-            overallScore: ai.overallScore,
-            strengths: ai.strengths,
-            weaknesses: ai.weaknesses,
-            summary: ai.summary,
-            recommendation: ai.recommendation,
+    const updated = await prisma.$transaction(async (tx) => {
+      for (const q of questionEvaluations(interview.questions, ai.questions)) {
+        await tx.companyQuestion.update({ where: { id: q.questionId }, data: q.data });
+      }
+      return tx.companyInterview.update({
+        where: { id: interview.id },
+        data: {
+          status: "COMPLETED",
+          completedAt: new Date(),
+          report: {
+            create: {
+              overallScore: ai.overallScore,
+              strengths: ai.strengths,
+              weaknesses: ai.weaknesses,
+              summary: ai.summary,
+              recommendation: ai.recommendation,
+            },
           },
         },
-      },
-      include: { questions: { orderBy: { displayOrder: "asc" } }, report: true },
+        include: { questions: { orderBy: { displayOrder: "asc" } }, report: true },
+      });
     });
 
     return { interview: updated };

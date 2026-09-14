@@ -14,6 +14,7 @@ export type InterviewReportInput = {
   role: string;
   experienceYears: number;
   questions: {
+    id: string;
     questionText: string;
     difficulty: string;
     category: string | null;
@@ -24,6 +25,7 @@ export type InterviewReportInput = {
 import {
   GenerateAiResultForPracticeInterviewSchema,
   type GenerateAiResultForPracticeInterview,
+  type QuestionEvaluation,
 } from "@interview.ai/types/ai";
 
 export const analyzeResume = async (
@@ -173,6 +175,7 @@ export const generatePracticeInterviewReport = async (
     Questions:
     ${practiceInterview.questions.map((q) => {
       return `
+      Question ID: ${q.id}
       Question: ${q.questionText}
       Difficulty: ${q.difficulty}
       Category: ${q.category}
@@ -181,15 +184,9 @@ export const generatePracticeInterviewReport = async (
       `;
     })}
 
-    Return the response in the following JSON format:
-    {
-      "aiFeedback": "string",
-      "score": number,
-      "strengths": string[],
-      "weaknesses": string[],
-      "summary": string,
-      "recommendation": string
-    }
+    Score every question individually (0-100 on each dimension) and echo its Question ID exactly.
+    An empty or missing answer scores 0 on every dimension. Then give an overall 0-100 score,
+    strengths, weaknesses, a summary and a recommendation for the whole interview.
     `;
 
     const { text } = await generateText({
@@ -254,3 +251,25 @@ Each question text should be under 25 words to allow natural verbal flow.`;
     throw error;
   }
 };
+
+/**
+ * Pairs Gemini's per-question evaluations with our question rows.
+ * Matches on questionId; falls back to position if the model mangled an id.
+ */
+export const questionEvaluations = (
+  questions: { id: string }[],
+  evaluations: QuestionEvaluation[],
+) =>
+  questions.map((q, i) => {
+    const e = evaluations.find((x) => x.questionId === q.id) ?? evaluations[i];
+    return {
+      questionId: q.id,
+      data: {
+        questionScore: Math.round(e?.questionScore ?? 0),
+        correctnessScore: Math.round(e?.correctnessScore ?? 0),
+        communicationScore: Math.round(e?.communicationScore ?? 0),
+        confidenceScore: Math.round(e?.confidenceScore ?? 0),
+        aiFeedback: e?.aiFeedback ?? null,
+      },
+    };
+  });
