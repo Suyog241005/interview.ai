@@ -40,6 +40,8 @@ export const Navbar = () => {
 
   const navLinks = [
     { label: "Dashboard", path: "/dashboard" },
+    { label: "Interviews", path: "/interviews" },
+    { label: "Team", path: "/team" },
     { label: "New Job", path: "/jobs/new" },
   ];
 

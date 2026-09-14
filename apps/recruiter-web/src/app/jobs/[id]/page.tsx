@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { CheckIcon, CopyIcon, SparklesIcon, Trash2Icon } from "lucide-react";
+import { SparklesIcon, Trash2Icon } from "lucide-react";
 import { trpc, type RouterOutputs } from "@interview.ai/api/client";
 import { Card } from "@interview.ai/ui/card";
 import { Badge } from "@interview.ai/ui/badge";
 import { Button } from "@interview.ai/ui/button";
 import { Input } from "@interview.ai/ui/input";
-import { PageShell, RequireRecruiter, Spinner } from "@/components/shell";
+import { CopyButton, PageShell, RequireRecruiter, Spinner } from "@/components/shell";
 
 const CANDIDATE_URL =
   (process.env.NODE_ENV === "production"
@@ -228,19 +228,5 @@ function Invite({ jobId, interviewId }: { jobId: string; interviewId: string }) 
       )}
       <p className="text-[11px] text-slate-400">Links expire in 7 days. Send them to the candidate yourself; email delivery is not wired up yet.</p>
     </Card>
-  );
-}
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-  return (
-    <Button variant="outline" size="icon" onClick={copy} className="w-7 h-7 shrink-0" aria-label="Copy link">
-      {copied ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
-    </Button>
   );
 }

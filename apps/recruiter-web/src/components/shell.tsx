@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2Icon } from "lucide-react";
+import { CheckIcon, CopyIcon, Loader2Icon } from "lucide-react";
+import { Button } from "@interview.ai/ui/button";
 import { useSession } from "@interview.ai/better-auth/client";
 import { trpc, type RouterOutputs } from "@interview.ai/api/client";
 import { Navbar } from "./navbar";
@@ -48,3 +49,17 @@ export const RequireRecruiter = ({
   }
   return <Spinner />;
 };
+
+export function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <Button variant="outline" size="icon" onClick={copy} className="w-7 h-7 shrink-0" aria-label="Copy link">
+      {copied ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
+    </Button>
+  );
+}

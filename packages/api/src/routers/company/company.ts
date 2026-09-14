@@ -72,7 +72,9 @@ const getCompany = protectedRecruiterProcedure.query(async ({ ctx }) => {
       id: companyId,
     },
     include: {
-      recruiters: true,
+      recruiters: {
+        include: { user: { select: { name: true, email: true, image: true } } },
+      },
       jobs: true,
     },
   });

@@ -171,7 +171,7 @@ appRouter
 
 #### Company Profile Procedures:
 - **`createCompany`** (`protectedProcedure.mutation`): Accepts `{ companyName, website?, logoUrl? }`. In a transaction, creates the `Company` record and links the creating user as the first `Recruiter`.
-- **`getCompany`** (`protectedRecruiterProcedure.query`): Retrieves company details including `recruiters` and `jobs`.
+- **`getCompany`** (`protectedRecruiterProcedure.query`): Retrieves company details including `recruiters` and `jobs`. Includes `jobs` and `recruiters` (each with `user.name/email/image`).
 - **`updateCompany`** (`protectedCompanyOwnerProcedure.mutation`): Updates company profile attributes (`name`, `website`, `logoUrl`).
 - **`deleteCompany`** (`protectedCompanyOwnerProcedure.mutation`): Deletes company and cascades.
 
