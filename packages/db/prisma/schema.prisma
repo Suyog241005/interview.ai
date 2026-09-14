@@ -189,8 +189,8 @@ model CompanyInterview {
   startedAt   DateTime?
   completedAt DateTime?
 
-  candidateId String
-  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String?
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
   jobId String?
   job   Job?    @relation(fields: [jobId], references: [id], onDelete: Cascade)

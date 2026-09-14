@@ -66,7 +66,7 @@ export type GeneratePracticeInterviewReportResponse = PracticeInterview;
 export const CreateCompanyInterview = z.object({
   startedAt: z.date().optional(),
   completedAt: z.date().optional(),
-  candidateId: z.string(),
+  candidateId: z.string().optional(),
   jobId: z.string(),
 });
 export type CreateCompanyInterviewRequest = z.infer<

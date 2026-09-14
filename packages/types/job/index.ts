@@ -34,3 +34,7 @@ export const UpsertInterviewConfigSchema = z.object({
 export const GetInterviewConfigSchema = z.object({
   jobId: z.string(),
 });
+
+export const DeleteJobSchema = z.object({
+  jobId: z.string(),
+});

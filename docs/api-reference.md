@@ -182,7 +182,7 @@ appRouter
 - **`createJob`** (`protectedRecruiterProcedure.mutation`): Accepts `{ title, description, status, minExperienceYears, maxExperienceYears? }`. Creates job and assigns current recruiter in `JobRecruiter`.
 - **`getJob`** (`protectedRecruiterProcedure.query`): Fetches job with `jobRecruiters`, `company`, and `interviewConfig`.
 - **`updateJob`** (`protectedRecruiterProcedure.mutation`): Updates job title, description, status (`DRAFT`, `OPEN`, `PAUSED`, `CLOSED`), or experience. Checks recruiter assignment.
-- **`deleteJob`** (`protectedRecruiterProcedure.mutation`): Removes job opening.
+- **`deleteJob`** (`protectedRecruiterProcedure.mutation`): Input `{ jobId }`. Deletes the job if it belongs to the recruiter's company.
 
 #### Interview Configuration Procedures:
 - **`upsertInterviewConfig`** (`protectedRecruiterProcedure.mutation`): Creates or updates `InterviewConfig` for a job (`questionCount`, `interviewMode`, `durationMinutes`, `prompt`).

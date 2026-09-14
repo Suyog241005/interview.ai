@@ -1,5 +1,6 @@
 import {
   CreateJobSchema,
+  DeleteJobSchema,
   GetJobSchema,
   UpdateJobSchema,
 } from "@interview.ai/types/job";
@@ -44,18 +45,15 @@ const createJob = protectedRecruiterProcedure
     return { job, jobRecruiter };
   });
 
-const deleteJob = protectedRecruiterProcedure.mutation(async ({ ctx }) => {
-  const { companyId, userId } = ctx;
+const deleteJob = protectedRecruiterProcedure
+  .input(DeleteJobSchema)
+  .mutation(async ({ input, ctx }) => {
+    const job = await prisma.job.delete({
+      where: { id: input.jobId, companyId: ctx.companyId },
+    });
 
-  const company = await prisma.company.delete({
-    where: {
-      id: companyId,
-      ownerId: userId,
-    },
+    return { job };
   });
-
-  return { company };
-});
 
 const getJob = protectedRecruiterProcedure
   .input(GetJobSchema)

@@ -1,4 +1,5 @@
 import { candidateAuthRouter } from "./routers/auth/candidate-auth";
+import { recruiterAuthRouter } from "./routers/auth/recruiter-auth";
 import { candidateRouter } from "./routers/candidate";
 import { companyRouter } from "./routers/company";
 import { practiceInterviewRouter } from "./routers/practice/practice-interview";
@@ -12,6 +13,7 @@ export const appRouter = router({
     };
   }),
   candidateAuth: candidateAuthRouter,
+  recruiterAuth: recruiterAuthRouter,
   practice: practiceInterviewRouter,
   candidate: candidateRouter,
   company: companyRouter,
