@@ -133,63 +133,68 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
+                    <label htmlFor="contact-name" className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
                       Your Name
                     </label>
                     <Input
                       type="text"
-                      placeholder="Jane Doe"
+                      id="contact-name"
+                    placeholder="Jane Doe"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white text-xs h-10 rounded-md"
+                      className="bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-sm md:text-sm h-10 rounded-md"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
+                    <label htmlFor="contact-email" className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
                       Email Address *
                     </label>
                     <Input
                       type="email"
                       required
-                      placeholder="jane@example.com"
+                      id="contact-email"
+                    placeholder="jane@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white text-xs h-10 rounded-md"
+                      className="bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-sm md:text-sm h-10 rounded-md"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
+                  <label htmlFor="contact-subject" className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
                     Subject
                   </label>
                   <Input
                     type="text"
+                    id="contact-subject"
                     placeholder="Feedback, Bug Report, or Enterprise Inquiry"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white text-xs h-10 rounded-md"
+                    className="bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-sm md:text-sm h-10 rounded-md"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
+                  <label htmlFor="contact-message" className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
                     Message *
                   </label>
                   <textarea
                     required
                     rows={5}
+                    id="contact-message"
                     placeholder="Write your message or inquiry here..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white text-xs p-3 rounded-md focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-sans"
+                    className="w-full bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-sm p-3 rounded-md outline-none focus-visible:border-slate-400 focus-visible:ring-3 focus-visible:ring-slate-400/20 dark:focus-visible:border-zinc-500 transition-colors font-sans"
                   />
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto px-8 py-3 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-xs tracking-tight hover:bg-black dark:hover:bg-zinc-200 cursor-pointer shadow-md flex items-center justify-center gap-2"
+                  size="lg"
+                  className="w-full sm:w-auto h-10 px-8 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black font-medium text-xs tracking-tight hover:bg-black dark:hover:bg-zinc-200 cursor-pointer shadow-md flex items-center justify-center gap-2"
                 >
                   <SendIcon size={14} />
                   <span>Send Message →</span>

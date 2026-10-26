@@ -47,7 +47,7 @@ export default function InterviewDetailPage() {
               </header>
 
               {i.report ? (
-                <Card className="p-6 space-y-5">
+                <Card className="p-6 gap-5">
                   <div className="flex items-center gap-6">
                     <div>
                       <p className="text-[10px] font-mono uppercase text-slate-500">overall</p>
@@ -75,7 +75,7 @@ export default function InterviewDetailPage() {
                 </Card>
               )}
 
-              <Card className="p-6 space-y-3">
+              <Card className="p-6 gap-3">
                 <h2 className="font-semibold">
                   Transcript ({questions.filter((x) => x.isAnswered).length}/{questions.length} answered)
                 </h2>

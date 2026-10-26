@@ -57,7 +57,7 @@ export default function OnboardingPage() {
 
   return (
     <PageShell>
-      <Card className="max-w-lg mx-auto p-8 space-y-6">
+      <Card className="max-w-lg mx-auto p-8 gap-6">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Create your company</h1>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">

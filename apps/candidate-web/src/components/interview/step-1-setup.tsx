@@ -13,9 +13,8 @@ import { motion } from "motion/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Controller, useForm } from "react-hook-form";
-import { Card } from "@interview.ai/ui/card";
 import { Input } from "@interview.ai/ui/input";
-import { Field, FieldError, FieldGroup } from "@interview.ai/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@interview.ai/ui/field";
 import {
   Select,
   SelectContent,
@@ -30,10 +29,24 @@ import type { PracticeInterviewWithQuestion } from "@interview.ai/api/client";
 import type { ResumeAnalysis } from "@interview.ai/types";
 import { uploadToCloudinary } from "../../lib/cloudinary";
 import { trpc } from "@interview.ai/api/client";
+import { cn } from "@/lib/utils";
+
+// One control style for every field: same height, border, focus ring and invalid state.
+const labelClass =
+  "text-[11px] font-mono font-normal uppercase tracking-tight text-slate-600 dark:text-zinc-400 group-data-[invalid=true]/field:text-rose-500";
+const shellClass =
+  "flex h-11 w-full items-center gap-2.5 rounded-md border border-slate-200 dark:border-zinc-800 bg-slate-100/70 dark:bg-zinc-900 px-3 transition-colors focus-within:border-slate-400 dark:focus-within:border-zinc-500 focus-within:ring-3 focus-within:ring-slate-400/20 group-data-[invalid=true]/field:border-rose-400 group-data-[invalid=true]/field:focus-within:border-rose-400 group-data-[invalid=true]/field:focus-within:ring-rose-400/20";
+const shellIconClass = "size-4 shrink-0 text-slate-400 dark:text-zinc-500";
+const shellInputClass =
+  "h-full flex-1 rounded-none border-0 bg-transparent dark:bg-transparent px-0 text-sm md:text-sm text-slate-900 dark:text-white shadow-none placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus-visible:ring-0 aria-invalid:ring-0";
+const errorClass = "text-xs font-mono text-rose-500";
 
 const formSchema = z.object({
   role: z.string().min(3, "Job title must be at least 3 characters"),
-  experience: z.string(),
+  experience: z
+    .string()
+    .trim()
+    .regex(/^\d{1,2}$/, "Enter your years of experience as a whole number"),
   interviewMode: z.enum(["TECHNICAL", "HR"], {
     error: "Mode must be Technical or HR",
   }),
@@ -115,6 +128,48 @@ export const Step1Setup = ({
       );
     }
   };
+
+  const handleResumeFile = async (file: File) => {
+    setResumeFileField(file);
+    setIsAnalyzingResume(true);
+    try {
+      let uploadedUrl = "";
+      try {
+        uploadedUrl = await uploadToCloudinary(file);
+      } catch (err: any) {
+        console.error("Cloudinary upload failed:", err);
+        alert(err?.message || "Failed to upload resume to Cloudinary.");
+        setIsAnalyzingResume(false);
+        return;
+      }
+
+      const { resume } = await createResumeMutation.mutateAsync({
+        name: file.name,
+        resumeUrl: uploadedUrl,
+      });
+
+      const { resumeAnalysis } = await analyzeResumeMutation.mutateAsync({
+        resumeId: resume.id,
+      });
+
+      if (resumeAnalysis) {
+        const suggestedRole = resumeAnalysis.suggestedRoles?.[0] || "";
+        const years = Number(resumeAnalysis.experienceyears);
+        const expYears = Number.isFinite(years) && years > 0 ? String(Math.round(years)) : "";
+        form.setValue("role", suggestedRole, { shouldDirty: true, shouldValidate: true });
+        form.setValue("experience", expYears, { shouldDirty: true, shouldValidate: true });
+        setResumeAnalysis(resumeAnalysis as any);
+      }
+    } catch (error) {
+      console.error("Resume analysis error:", error);
+    } finally {
+      setIsAnalyzingResume(false);
+    }
+  };
+
+  // Prevents a second click from creating a duplicate interview while questions generate
+  const isGenerating =
+    createInterviewMutation.isPending || createQuestionsMutation.isPending;
 
   const featureSteps = [
     {
@@ -207,240 +262,204 @@ export const Step1Setup = ({
             </h3>
           </div>
 
-          <Card className="bg-transparent border-0 p-0 shadow-none space-y-5">
-            <form
-              id="setup-form"
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-5"
-            >
-              <FieldGroup className="space-y-4">
-                {/* Role Input */}
-                <Controller
-                  name="role"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
-                          Target job role *
-                        </label>
-                        <div className="flex items-center gap-2 bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus-within:border-slate-400 dark:focus-within:border-white transition-colors px-3 py-1 rounded-md">
-                          <User2Icon className="text-slate-400 dark:text-zinc-500 shrink-0" size={16} />
-                          <Input
-                            {...field}
-                            id="setup-form-job-title"
-                            aria-invalid={fieldState.invalid}
-                            placeholder="e.g. Senior Frontend Engineer"
-                            autoComplete="off"
-                            className="bg-transparent border-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-xs focus:ring-0 rounded-none focus:outline-none w-full"
-                          />
-                        </div>
-                      </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} className="text-rose-500 text-xs mt-1 font-mono" />
-                      )}
-                    </Field>
-                  )}
-                />
+          <form
+            id="setup-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-6"
+          >
+            <FieldGroup>
+              {/* Role Input */}
+              <Controller
+                name="role"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="setup-form-job-title" className={labelClass}>
+                      Target job role *
+                    </FieldLabel>
+                    <div className={shellClass}>
+                      <User2Icon className={shellIconClass} size={16} aria-hidden />
+                      <Input
+                        {...field}
+                        id="setup-form-job-title"
+                        aria-invalid={fieldState.invalid}
+                        placeholder="e.g. Senior Frontend Engineer"
+                        autoComplete="off"
+                        className={shellInputClass}
+                      />
+                    </div>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} className={errorClass} />
+                    )}
+                  </Field>
+                )}
+              />
 
-                {/* Experience Years */}
-                <Controller
-                  name="experience"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono tracking-tight text-[#1c69d4] dark:text-[#007cf0] block uppercase font-semibold">
-                          Years of experience *
-                        </label>
-                        <div className="flex items-center gap-2 bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus-within:border-slate-400 dark:focus-within:border-white transition-colors px-3 py-1 rounded-md">
-                          <BriefcaseBusinessIcon className="text-slate-400 dark:text-zinc-500 shrink-0" size={16} />
-                          <Input
-                            {...field}
-                            id="setup-form-experience"
-                            type="text"
-                            aria-invalid={fieldState.invalid}
-                            placeholder="e.g. 4"
-                            autoComplete="off"
-                            className="bg-transparent border-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-xs focus:ring-0 rounded-none focus:outline-none w-full"
-                          />
-                        </div>
-                      </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} className="text-rose-500 text-xs mt-1 font-mono" />
-                      )}
-                    </Field>
-                  )}
-                />
+              {/* Experience Years */}
+              <Controller
+                name="experience"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="setup-form-experience" className={labelClass}>
+                      Years of experience *
+                    </FieldLabel>
+                    <div className={shellClass}>
+                      <BriefcaseBusinessIcon className={shellIconClass} size={16} aria-hidden />
+                      <Input
+                        {...field}
+                        id="setup-form-experience"
+                        type="text"
+                        inputMode="numeric"
+                        aria-invalid={fieldState.invalid}
+                        placeholder="e.g. 4"
+                        autoComplete="off"
+                        className={shellInputClass}
+                      />
+                    </div>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} className={errorClass} />
+                    )}
+                  </Field>
+                )}
+              />
 
-                {/* Interview Mode Selector */}
-                <Controller
-                  name="interviewMode"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
-                          Interview modality *
-                        </label>
-                        <Select
-                          {...field}
-                          defaultValue={field.value}
-                          onValueChange={field.onChange}
+              {/* Interview Mode Selector */}
+              <Controller
+                name="interviewMode"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="setup-form-mode" className={labelClass}>
+                      Interview modality *
+                    </FieldLabel>
+                    <Select name={field.name} value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        id="setup-form-mode"
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        aria-invalid={fieldState.invalid}
+                        className="w-full h-11 data-[size=default]:h-11 rounded-md border-slate-200 dark:border-zinc-800 bg-slate-100/70 dark:bg-zinc-900 dark:hover:bg-zinc-900 px-3 text-sm text-slate-900 dark:text-white focus-visible:border-slate-400 focus-visible:ring-slate-400/20 dark:focus-visible:border-zinc-500"
+                      >
+                        <span className="flex min-w-0 items-center gap-2.5">
+                          <MicIcon className={shellIconClass} aria-hidden />
+                          <SelectValue placeholder="Select mode" />
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white rounded-md">
+                        <SelectGroup>
+                          <SelectItem value="TECHNICAL" className="text-sm">
+                            Technical Interview
+                          </SelectItem>
+                          <SelectItem value="HR" className="text-sm">
+                            HR / Behavioral
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} className={errorClass} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              {/* Resume Upload / PDF Parser */}
+              <Controller
+                name="resume"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="setup-form-resume" className={labelClass}>
+                      Resume PDF (Optional context)
+                    </FieldLabel>
+
+                    {isAnalyzingResume ? (
+                      <div role="status" className={cn(shellClass, "border-blue-200 dark:border-[#007cf0] bg-blue-50 dark:bg-zinc-900")}>
+                        <Loader2Icon className="animate-spin size-4 text-[#007cf0] shrink-0" aria-hidden />
+                        <span className="text-sm text-slate-800 dark:text-zinc-200 truncate">
+                          Uploading & analyzing PDF with AI...
+                        </span>
+                      </div>
+                    ) : resumeFileField ? (
+                      <div className={cn(shellClass, "justify-between")}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <FileTextIcon className="text-[#007cf0] shrink-0 size-4" aria-hidden />
+                          <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                            {resumeFileField.name}
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-zinc-500 shrink-0">
+                            {(resumeFileField.size / (1024 * 1024)).toFixed(2)} MB
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label="Remove resume"
+                          onClick={() => {
+                            setResumeFileField(null);
+                            setResumeAnalysis(null);
+                            form.setValue("resume", undefined, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                          }}
+                          className="text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white rounded-full cursor-pointer"
                         >
-                          <SelectTrigger className="w-full bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white rounded-md text-xs font-mono tracking-tight h-10">
-                            <SelectValue placeholder="Select mode" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white rounded-md">
-                            <SelectGroup>
-                              <SelectItem value="TECHNICAL" className="text-xs font-mono uppercase focus:bg-slate-100 dark:focus:bg-zinc-900 focus:text-slate-900 dark:focus:text-white rounded-md">
-                                Technical Interview
-                              </SelectItem>
-                              <SelectItem value="HR" className="text-xs font-mono uppercase focus:bg-slate-100 dark:focus:bg-zinc-900 focus:text-slate-900 dark:focus:text-white rounded-md">
-                                HR / Behavioral
-                              </SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
+                          <XIcon />
+                        </Button>
                       </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} className="text-rose-500 text-xs mt-1 font-mono" />
-                      )}
-                    </Field>
-                  )}
-                />
+                    ) : (
+                      <label htmlFor="setup-form-resume" className={cn(shellClass, "cursor-pointer")}>
+                        <FileTextIcon className={shellIconClass} size={16} aria-hidden />
+                        <span className="flex-1 truncate text-sm text-slate-400 dark:text-zinc-500">
+                          Upload a PDF to auto-fill role and experience
+                        </span>
+                        <span className="shrink-0 rounded-md bg-slate-200 dark:bg-zinc-800 px-2.5 py-1 text-xs font-medium text-slate-900 dark:text-white">
+                          Browse
+                        </span>
+                        <input
+                          ref={field.ref}
+                          name={field.name}
+                          onBlur={field.onBlur}
+                          id="setup-form-resume"
+                          type="file"
+                          accept="application/pdf,.pdf"
+                          aria-invalid={fieldState.invalid}
+                          className="sr-only"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!file) return;
+                            field.onChange(file);
+                            handleResumeFile(file);
+                          }}
+                        />
+                      </label>
+                    )}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} className={errorClass} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
 
-                {/* Resume Upload / PDF Parser */}
-                <Controller
-                  name="resume"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-mono tracking-tight text-slate-600 dark:text-zinc-400 block uppercase">
-                          Resume PDF (Optional context)
-                        </label>
-
-                        {isAnalyzingResume ? (
-                          <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-zinc-900 border border-blue-200 dark:border-[#007cf0] rounded-md text-slate-800 dark:text-zinc-200 text-xs font-mono">
-                            <Loader2Icon className="animate-spin h-4 w-4 text-[#007cf0] shrink-0" />
-                            <span>Uploading & analyzing PDF with AI...</span>
-                          </div>
-                        ) : resumeFileField ? (
-                          <div className="flex items-center justify-between gap-3 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-200 px-4 py-2.5 rounded-md w-full">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <FileTextIcon className="text-[#007cf0] shrink-0 h-4 w-4" />
-                              <div className="flex flex-col min-w-0 font-mono text-left">
-                                <span className="text-xs font-semibold text-slate-900 dark:text-white truncate max-w-[200px]">
-                                  {resumeFileField.name}
-                                </span>
-                                <span className="text-[10px] text-slate-500 dark:text-zinc-500">
-                                  {(resumeFileField.size / (1024 * 1024)).toFixed(2)} MB
-                                </span>
-                              </div>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => {
-                                setResumeFileField(null);
-                                form.setValue("resume", undefined, {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                });
-                              }}
-                              className="text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white border-slate-200 dark:border-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-800 rounded-full h-6 w-6 p-0 cursor-pointer"
-                            >
-                              <XIcon size={14} />
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 bg-slate-100/70 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus-within:border-slate-400 dark:focus-within:border-white transition-colors px-3 py-1 rounded-md">
-                            <FileTextIcon className="text-slate-400 dark:text-zinc-500 shrink-0" size={16} />
-                            <Input
-                              {...field}
-                              id="setup-form-resume"
-                              type="file"
-                              aria-invalid={fieldState.invalid}
-                              accept=".pdf"
-                              value={""}
-                              className="bg-transparent border-0 text-slate-900 dark:text-white text-xs focus:ring-0 rounded-none focus:outline-none w-full file:bg-slate-200 dark:file:bg-zinc-800 file:text-slate-900 dark:file:text-white file:border-0 file:text-xs file:font-mono file:px-2 file:py-1 file:mr-2 file:rounded-md cursor-pointer"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                field.onChange(file);
-                                setResumeFileField(file);
-                                setIsAnalyzingResume(true);
-                                try {
-                                  let uploadedUrl = "";
-                                  try {
-                                    uploadedUrl = await uploadToCloudinary(file);
-                                  } catch (err: any) {
-                                    console.error("Cloudinary upload failed:", err);
-                                    alert(
-                                      err?.message ||
-                                        "Failed to upload resume to Cloudinary.",
-                                    );
-                                    setIsAnalyzingResume(false);
-                                    return;
-                                  }
-
-                                  const { resume } =
-                                    await createResumeMutation.mutateAsync({
-                                      name: file.name,
-                                      resumeUrl: uploadedUrl,
-                                    });
-
-                                  const { resumeAnalysis } =
-                                    await analyzeResumeMutation.mutateAsync({
-                                      resumeId: resume.id,
-                                    });
-
-                                  if (resumeAnalysis) {
-                                    const suggestedRole =
-                                      resumeAnalysis.suggestedRoles?.[0] || "";
-                                    const expYears = String(
-                                      resumeAnalysis.experienceyears || "",
-                                    );
-                                    form.setValue("role", suggestedRole, {
-                                      shouldDirty: true,
-                                    });
-                                    form.setValue("experience", expYears, {
-                                      shouldDirty: true,
-                                    });
-                                    setResumeAnalysis(resumeAnalysis as any);
-                                  }
-                                } catch (error) {
-                                  console.error("Resume analysis error:", error);
-                                } finally {
-                                  setIsAnalyzingResume(false);
-                                }
-                              }}
-                            />
-                          </div>
-                        )}
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} className="text-rose-500 text-xs mt-1 font-mono" />
-                        )}
-                      </div>
-                    </Field>
-                  )}
-                />
-              </FieldGroup>
-            </form>
-
-            <div className="pt-2">
-              <Button
-                className="w-full bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 font-medium text-xs tracking-tight py-3.5 rounded-full cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 shadow-md font-sans"
-                type="submit"
-                form="setup-form"
-                disabled={isAnalyzingResume}
-              >
-                <MicIcon size={16} />
-                <span>Generate Questions & Start →</span>
-              </Button>
-            </div>
-          </Card>
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isAnalyzingResume || isGenerating}
+              className="w-full h-11 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black hover:bg-black dark:hover:bg-zinc-200 text-sm font-medium tracking-tight cursor-pointer shadow-md"
+            >
+              {isGenerating ? (
+                <Loader2Icon data-icon="inline-start" className="animate-spin" />
+              ) : (
+                <MicIcon data-icon="inline-start" />
+              )}
+              <span>{isGenerating ? "Generating questions..." : "Generate Questions & Start →"}</span>
+            </Button>
+          </form>
         </motion.div>
       </div>
     </motion.div>

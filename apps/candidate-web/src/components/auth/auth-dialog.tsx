@@ -25,7 +25,7 @@ export const AuthDialog = () => {
 
   return (
     <div className="w-full">
-      <Card className="w-full p-6 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white relative overflow-hidden shadow-xl">
+      <Card className="ring-0 w-full p-6 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white relative overflow-hidden shadow-xl">
         {/* Vercel Mesh Gradient Top Hairline */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080]" />
 

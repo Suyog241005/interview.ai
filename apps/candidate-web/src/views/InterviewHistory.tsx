@@ -74,7 +74,7 @@ const HistoryList = () => {
 
   if (isError) {
     return (
-      <Card className="bg-white dark:bg-zinc-950 p-8 border border-slate-200 dark:border-zinc-800 rounded-lg text-center shadow-xl max-w-lg mx-auto mt-10 text-slate-900 dark:text-white">
+      <Card className="ring-0 bg-white dark:bg-zinc-950 p-8 border border-slate-200 dark:border-zinc-800 rounded-lg text-center shadow-xl max-w-lg mx-auto mt-10 text-slate-900 dark:text-white">
         <CardContent className="pt-6 space-y-4">
           <div className="mx-auto w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400">
             ⚠️

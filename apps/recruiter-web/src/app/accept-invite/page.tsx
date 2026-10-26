@@ -30,7 +30,7 @@ function AcceptInvite() {
   if (isPending || !session?.user) return <Spinner />;
 
   return (
-    <Card className="max-w-md mx-auto p-8 space-y-4 text-center">
+    <Card className="max-w-md mx-auto p-8 gap-4 text-center">
       <h1 className="text-xl font-semibold tracking-tight">Join your team</h1>
       <p className="text-xs text-slate-500 dark:text-zinc-400">
         Signed in as <span className="font-mono">{session.user.email}</span>. The

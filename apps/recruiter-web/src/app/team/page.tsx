@@ -66,11 +66,12 @@ function InviteRecruiter() {
   const links = pending.data?.invitations ?? [];
 
   return (
-    <Card className="p-6 space-y-4">
+    <Card className="p-6 gap-4">
       <h2 className="font-semibold">Invite a recruiter</h2>
       <div className="flex flex-col sm:flex-row gap-2">
         <Input
           type="email"
+          aria-label="Colleague email"
           placeholder="colleague@company.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

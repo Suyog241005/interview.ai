@@ -72,7 +72,7 @@ function CreateInterview({ jobId }: { jobId: string }) {
     onSuccess: () => utils.company.getAllCompanyInterviews.invalidate(),
   });
   return (
-    <Card className="p-8 text-center space-y-3">
+    <Card className="p-8 text-center gap-3">
       <p className="text-sm text-slate-600 dark:text-zinc-400">
         Set up the interview for this job to generate questions and invite candidates.
       </p>
@@ -114,7 +114,7 @@ function Questions({ interviewId }: { interviewId: string }) {
   };
 
   return (
-    <Card className="p-6 space-y-4">
+    <Card className="p-6 gap-4">
       <div className="flex items-center justify-between gap-4">
         <h2 className="font-semibold">Questions ({list.length})</h2>
         <Button onClick={onGenerate} disabled={generate.isPending} size="sm" className="rounded-full">
@@ -141,6 +141,7 @@ function Questions({ interviewId }: { interviewId: string }) {
 
       <div className="flex gap-2 pt-2 border-t border-slate-200 dark:border-zinc-800">
         <Input
+          aria-label="New question"
           placeholder="Add a question manually…"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -169,7 +170,8 @@ function QuestionRow({
       <span className="text-[11px] font-mono text-slate-400 pt-1 w-5 shrink-0">{q.displayOrder}</span>
       <div className="flex-1 min-w-0 space-y-1">
         <textarea
-          className="w-full bg-transparent text-sm resize-none focus:outline-none"
+          aria-label={`Question ${q.displayOrder}`}
+          className="w-full bg-transparent text-sm resize-none rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-slate-400/40"
           rows={2}
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -203,11 +205,11 @@ function Invite({ jobId, interviewId }: { jobId: string; interviewId: string }) 
   const links = invitations.data?.invitations ?? [];
 
   return (
-    <Card className="p-6 space-y-4">
+    <Card className="p-6 gap-4">
       <h2 className="font-semibold">Invite a candidate</h2>
       <div className="flex flex-col sm:flex-row gap-2">
-        <Input type="email" placeholder="candidate@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Input placeholder="Name (optional)" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input type="email" aria-label="Candidate email" placeholder="candidate@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input aria-label="Candidate name" placeholder="Name (optional)" value={name} onChange={(e) => setName(e.target.value)} />
         <Button onClick={onInvite} disabled={invite.isPending || !email} className="rounded-full shrink-0">
           {invite.isPending ? "Creating…" : "Create invite link"}
         </Button>

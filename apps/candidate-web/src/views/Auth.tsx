@@ -34,7 +34,7 @@ export default function AuthPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <Card className="w-full max-w-md p-8 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 shadow-xl relative overflow-hidden">
+        <Card className="ring-0 w-full max-w-md p-8 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#007cf0] via-[#7928ca] to-[#ff0080]" />
 
           <CardHeader className="flex items-center justify-center gap-3 mb-6 p-0 pt-2">
