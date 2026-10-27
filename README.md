@@ -112,14 +112,17 @@ bunx prisma db push
 bun run db:seed        # resets and re-creates seed users and their data
 bun run db:seed:clear  # removes only the seed rows
 ```
-Every seed account signs in with email and password `Password123!`:
+Every seed account signs in with email and password `Password123!`. The seed is deterministic and creates 18 candidates, 36 practice interviews, 2 companies, 7 recruiters, 11 jobs (open, paused, closed, draft), 53 company interviews with AI reports, and ~80 invitations (accepted, pending, expired, declined).
 
 | Role | Email | Data |
 | :--- | :--- | :--- |
-| Candidate | `candidate@example.com` | 2 practice reports, 1 completed company interview |
+| Candidate | `candidate@example.com` | 10 practice reports with an improving score trend, interviews at Acme Labs |
 | Candidate | `candidate2@example.com` | Pending invite at `/interview?token=SEEDDEMOINVITE01` |
-| Recruiter (owner) | `recruiter@example.com` | Owns **Acme Labs**: 2 jobs, question template, invites |
+| Recruiter (owner) | `recruiter@example.com` | Owns **Acme Labs**: 8 jobs, 5 recruiters, recruiter invites |
 | Recruiter | `recruiter2@example.com` | Teammate at Acme Labs |
+| Recruiter (owner) | `recruiter3@example.com` | Owns **Globex Systems**: 3 jobs |
+
+Other candidates sign in as `firstname.lastname@example.com` (for example `ishaan.verma@example.com`).
 
 ### 5. Start Development Servers
 ```bash
