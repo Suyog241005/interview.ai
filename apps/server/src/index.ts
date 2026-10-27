@@ -1,5 +1,5 @@
 import express from "express";
-import { CLIENT_URL, PORT } from "./constants";
+import { PORT } from "./constants";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -7,37 +7,22 @@ import helmet from "helmet";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter, createTRPCContext } from "@interview.ai/api";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "@interview.ai/better-auth/server";
+import { auth, isAllowedOrigin } from "@interview.ai/better-auth/server";
 
 const app = express();
 
-app.use(express.json());
-
-const allowedOrigins = [
-  CLIENT_URL,
-  process.env.CLIENT_URL,
-  "http://localhost:5173",
-  "http://localhost:3000",
-].filter(Boolean) as string[];
-
+// CORS first so every route, including error responses and preflights, carries the headers
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const isAllowed =
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app") ||
-        origin.startsWith("http://localhost:");
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
-      }
-    },
+    // Reflect the caller's origin when the shared policy allows it (every origin by default).
+    origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
     credentials: true,
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    maxAge: 86400,
   }),
 );
 
+app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(

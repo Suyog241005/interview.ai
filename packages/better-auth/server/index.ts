@@ -1,6 +1,9 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@interview.ai/db";
+import { isAllowedOrigin } from "./origins";
+
+export { allowAnyOrigin, isAllowedOrigin } from "./origins";
 
 const isProd =
   process.env.NODE_ENV === "production" ||
@@ -21,12 +24,11 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   baseURL: authUrl,
-  trustedOrigins: [
-    clientUrl,
-    "https://interview-ai-client-umber.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:5174",
-  ].filter(Boolean) as string[],
+  // Echo the caller's origin when the shared policy allows it, so every frontend domain can sign in
+  trustedOrigins: (request) => {
+    const origin = request?.headers.get("origin");
+    return origin && isAllowedOrigin(origin) ? [origin] : [];
+  },
   advanced: {
     disableCSRFCheck: true,
     defaultCookieAttributes: {
@@ -39,6 +41,9 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    minPasswordLength: 8, // keep in sync with MIN_PASSWORD_LENGTH in @interview.ai/ui email-auth-form
+    maxPasswordLength: 128,
+    autoSignIn: true,
   },
   socialProviders: {
     github: {

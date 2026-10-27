@@ -107,7 +107,21 @@ bunx prisma generate
 bunx prisma db push
 ```
 
-### 4. Start Development Servers
+### 4. Seed Dummy Data (optional)
+```bash
+bun run db:seed        # resets and re-creates seed users and their data
+bun run db:seed:clear  # removes only the seed rows
+```
+Every seed account signs in with email and password `Password123!`:
+
+| Role | Email | Data |
+| :--- | :--- | :--- |
+| Candidate | `candidate@example.com` | 2 practice reports, 1 completed company interview |
+| Candidate | `candidate2@example.com` | Pending invite at `/interview?token=SEEDDEMOINVITE01` |
+| Recruiter (owner) | `recruiter@example.com` | Owns **Acme Labs**: 2 jobs, question template, invites |
+| Recruiter | `recruiter2@example.com` | Teammate at Acme Labs |
+
+### 5. Start Development Servers
 ```bash
 # Run all workspaces concurrently
 bun run dev

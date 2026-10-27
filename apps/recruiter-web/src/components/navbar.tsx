@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Building2Icon, LogOutIcon } from "lucide-react";
 import { Button } from "@interview.ai/ui/button";
-import { Avatar, AvatarBadge, AvatarImage } from "@interview.ai/ui/avatar";
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@interview.ai/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -102,6 +102,9 @@ export const Navbar = () => {
                       alt={user.name || "User Profile"}
                       referrerPolicy="no-referrer"
                     />
+                    <AvatarFallback className="text-[10px] font-semibold">
+                      {(user.name || user.email || "?").split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
                     <AvatarBadge className="bg-emerald-500" />
                   </Avatar>
                 </Button>

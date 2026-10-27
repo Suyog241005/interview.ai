@@ -9,7 +9,8 @@ import {
 import { SparklesIcon } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "motion/react";
-import { signIn } from "@interview.ai/better-auth/client";
+import { signIn, signUp } from "@interview.ai/better-auth/client";
+import { AuthDivider, EmailAuthForm, safeNextPath } from "@interview.ai/ui/components/email-auth-form";
 
 export default function AuthPage() {
   const handleGoogleAuth = async () => {
@@ -59,17 +60,28 @@ export default function AuthPage() {
                 <span>ai-assessment // authentication</span>
               </span>
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight font-sans">
-                Sign in to your candidate account.
+                Sign in or create your candidate account.
               </h2>
               <p className="text-xs text-slate-600 dark:text-zinc-400 font-normal mt-2 leading-relaxed font-sans">
                 Access your personalized mock interviews, voice analysis, and historical performance insights.
               </p>
             </div>
 
+            <EmailAuthForm
+              onSignIn={(v) => signIn.email(v)}
+              onSignUp={(v) => signUp.email(v)}
+              onSuccess={() => window.location.assign(safeNextPath("/"))}
+            />
+
+            <div className="my-5">
+              <AuthDivider />
+            </div>
+
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className="w-full rounded-full flex items-center justify-center gap-3 bg-[#171717] dark:bg-white text-white dark:text-black py-3 px-4 font-medium text-xs tracking-tight hover:bg-black dark:hover:bg-zinc-200 transition-all cursor-pointer shadow-md font-sans"
+              type="button"
+              className="w-full h-11 rounded-full flex items-center justify-center gap-3 border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-900 dark:text-white px-4 font-medium text-sm tracking-tight hover:bg-slate-50 dark:hover:bg-zinc-900 transition-all cursor-pointer font-sans"
               onClick={handleGoogleAuth}
             >
               <FcGoogle size={18} />

@@ -192,7 +192,7 @@ const HistoryList = () => {
                     <span className="text-2xl font-semibold text-slate-900 dark:text-white font-sans tracking-tight">
                       {averageScore}
                     </span>
-                    <span className="text-xs text-slate-400 dark:text-zinc-500">/ 10</span>
+                    <span className="text-xs text-slate-400 dark:text-zinc-500">/ 100</span>
                   </div>
                 </div>
 
@@ -240,7 +240,7 @@ const HistoryList = () => {
                                   10,
                               ) / 10
                             : 0}{" "}
-                          / 10
+                          / 100
                         </span>
                       </div>
                       <div>
@@ -258,7 +258,7 @@ const HistoryList = () => {
                                   10,
                               ) / 10
                             : 0}{" "}
-                          / 10
+                          / 100
                         </span>
                       </div>
                       <div>
@@ -276,7 +276,7 @@ const HistoryList = () => {
                                   10,
                               ) / 10
                             : 0}{" "}
-                          / 10
+                          / 100
                         </span>
                       </div>
                     </div>
@@ -332,13 +332,13 @@ const HistoryList = () => {
 
                                 <div className="flex gap-4 pt-1 text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
                                   <span>
-                                    SCORE: <strong className="text-slate-900 dark:text-white">{q.questionScore}/10</strong>
+                                    SCORE: <strong className="text-slate-900 dark:text-white">{q.questionScore}/100</strong>
                                   </span>
                                   <span>
-                                    CORRECTNESS: <strong className="text-slate-900 dark:text-white">{q.correctnessScore}/10</strong>
+                                    CORRECTNESS: <strong className="text-slate-900 dark:text-white">{q.correctnessScore}/100</strong>
                                   </span>
                                   <span>
-                                    CONFIDENCE: <strong className="text-slate-900 dark:text-white">{q.confidenceScore}/10</strong>
+                                    CONFIDENCE: <strong className="text-slate-900 dark:text-white">{q.confidenceScore}/100</strong>
                                   </span>
                                 </div>
                               </div>

@@ -8,6 +8,7 @@ This document lists every environment variable utilized across all workspaces, t
 
 | Variable | Workspace(s) | Required In | Description | Placeholder / Example |
 | :--- | :--- | :--- | :--- | :--- |
+| `CORS_ORIGINS` | `apps/server`, `packages/better-auth` | Optional | Comma-separated origins allowed to call the API with credentials. Unset or `*` allows every origin (current default). localhost is always allowed. Also drives Better Auth `trustedOrigins`. | `https://candidate.yourdomain.com,https://recruiter.yourdomain.com` |
 | `PORT` | `apps/server` | Dev & Prod | HTTP port for the Express API server | `3001` / `8000` |
 | `DATABASE_URL` | `apps/server`, `packages/db`, `packages/better-auth` | Dev & Prod | Neon PostgreSQL pooled connection URI | `postgresql://username:password@ep-your-pooler.region.neon.tech/neondb?sslmode=require` |
 | `BETTER_AUTH_SECRET` | `apps/server`, `packages/better-auth` | Dev & Prod | 32+ character cryptographic secret for session tokens | `your_random_32_character_secret_key` |

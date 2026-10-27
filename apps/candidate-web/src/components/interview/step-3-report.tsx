@@ -136,7 +136,7 @@ export const Step3Report = ({
               <span className="text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900 dark:text-white font-sans">
                 {avgScore}
               </span>
-              <span className="text-slate-400 dark:text-zinc-500 font-normal text-base">/10</span>
+              <span className="text-slate-400 dark:text-zinc-500 font-normal text-base">/100</span>
             </div>
             <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-full w-fit">
               ASSESSMENT COMPLETE
@@ -286,7 +286,7 @@ export const Step3Report = ({
                         <span className="text-base font-semibold text-slate-900 dark:text-white font-sans">
                           {q.questionScore || 0}
                           <span className="text-slate-400 dark:text-zinc-500 text-xs font-normal">
-                            /10
+                            /100
                           </span>
                         </span>
                       </div>
@@ -323,7 +323,7 @@ export const Step3Report = ({
                           <div className="bg-white dark:bg-zinc-950 p-4 rounded-md border border-slate-200 dark:border-zinc-800 space-y-2">
                             <div className="flex justify-between items-center text-xs text-slate-500 dark:text-zinc-400 uppercase">
                               <span>Correctness</span>
-                              <span className="text-slate-900 dark:text-white font-semibold">{q.correctnessScore}/10</span>
+                              <span className="text-slate-900 dark:text-white font-semibold">{q.correctnessScore}/100</span>
                             </div>
                             <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-900 rounded-full overflow-hidden">
                               <div
@@ -336,7 +336,7 @@ export const Step3Report = ({
                           <div className="bg-white dark:bg-zinc-950 p-4 rounded-md border border-slate-200 dark:border-zinc-800 space-y-2">
                             <div className="flex justify-between items-center text-xs text-slate-500 dark:text-zinc-400 uppercase">
                               <span>Confidence</span>
-                              <span className="text-slate-900 dark:text-white font-semibold">{q.confidenceScore}/10</span>
+                              <span className="text-slate-900 dark:text-white font-semibold">{q.confidenceScore}/100</span>
                             </div>
                             <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-900 rounded-full overflow-hidden">
                               <div
@@ -349,7 +349,7 @@ export const Step3Report = ({
                           <div className="bg-white dark:bg-zinc-950 p-4 rounded-md border border-slate-200 dark:border-zinc-800 space-y-2">
                             <div className="flex justify-between items-center text-xs text-slate-500 dark:text-zinc-400 uppercase">
                               <span>Communication</span>
-                              <span className="text-slate-900 dark:text-white font-semibold">{q.communicationScore}/10</span>
+                              <span className="text-slate-900 dark:text-white font-semibold">{q.communicationScore}/100</span>
                             </div>
                             <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-900 rounded-full overflow-hidden">
                               <div

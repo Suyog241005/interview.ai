@@ -4,7 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed": "bun prisma/seed.ts",
+    "seed:clear": "bun prisma/seed.ts --clear"
   },
   "devDependencies": {
     "@types/bun": "latest",
