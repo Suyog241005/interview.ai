@@ -11,10 +11,13 @@ import { Button } from "@interview.ai/ui/button";
 import { Input } from "@interview.ai/ui/input";
 import { CopyButton, PageShell, RequireRecruiter, Spinner } from "@/components/shell";
 
-const CANDIDATE_URL =
-  (process.env.NODE_ENV === "production"
-    ? process.env.NEXT_PUBLIC_PROD_CANDIDATE_URL
-    : process.env.NEXT_PUBLIC_CANDIDATE_URL) ?? "http://localhost:5173";
+// Invite links point at the candidate app. Env vars win; otherwise fall back to the deployed
+// candidate app in production (Vercel doesn't ship .env files) and to localhost in development.
+const CANDIDATE_URL = (
+  process.env.NODE_ENV === "production"
+    ? process.env.NEXT_PUBLIC_PROD_CANDIDATE_URL || "https://interview-ai-client-umber.vercel.app"
+    : process.env.NEXT_PUBLIC_CANDIDATE_URL || "http://localhost:5173"
+).replace(/\/$/, "");
 
 type Question = RouterOutputs["company"]["getQuestions"]["questions"][number];
 
